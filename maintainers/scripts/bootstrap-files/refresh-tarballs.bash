@@ -38,7 +38,7 @@ Synopsis:
         are problematic for some reason (target-specific bug). In this
         case we can refresh just that target as:
 
-        \$ $0 --commit --targets=i686-unknown-linux-gnu
+        \$ $0 --commit --targets=aarch64-unknown-linux-gnu
 
     2. Routine refresh: all bootstrap files should be refreshed to avoid
         debugging problems that only occur on very old binaries.
@@ -69,9 +69,6 @@ info() {
 NATIVE_TARGETS=(
     aarch64-unknown-linux-gnu
     aarch64-unknown-linux-musl
-    i686-unknown-linux-gnu
-    x86_64-unknown-linux-gnu
-    x86_64-unknown-linux-musl
     aarch64-apple-darwin
     x86_64-apple-darwin
 )

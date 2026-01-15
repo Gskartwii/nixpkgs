@@ -25,10 +25,7 @@
     "arm64-apple-darwin"
     "aarch64-unknown-linux-gnu"
     "aarch64-unknown-linux-musl"
-    "i686-unknown-linux-gnu"
     "x86_64-apple-darwin"
-    "x86_64-unknown-linux-gnu"
-    "x86_64-unknown-linux-musl"
     # we can uncomment that once our bootstrap tarballs are fixed
     #"x86_64-unknown-freebsd"
   ],
