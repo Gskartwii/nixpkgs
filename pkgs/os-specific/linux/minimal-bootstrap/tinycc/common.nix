@@ -18,11 +18,13 @@ rec {
       libtccSources ? [
         "${src}/lib/libtcc1.c"
         "${src}/lib/va_list.c"
-      ],
+      ]
+      ++ (lib.optional buildPlatform.isRiscV64 "${src}/lib/lib-arm64.c"),
       libtccObjects ? [
         "libtcc1.o"
         "va_list.o"
-      ],
+      ]
+      ++ (lib.optional buildPlatform.isRiscV64 "lib-arm64.o"),
     }:
     let
 
@@ -67,11 +69,13 @@ rec {
       libtccSources ? [
         "${src}/lib/libtcc1.c"
         "${src}/lib/va_list.c"
-      ],
+      ]
+      ++ (lib.optional buildPlatform.isRiscV64 "${src}/lib/lib-arm64.c"),
       libtccObjects ? [
         "libtcc1.o"
         "va_list.o"
-      ],
+      ]
+      ++ (lib.optional buildPlatform.isRiscV64 "lib-arm64.o"),
       libtccBuildOptions,
       meta,
     }:

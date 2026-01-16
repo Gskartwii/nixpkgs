@@ -60,6 +60,9 @@ let
       # TODO: may not need following patches for mes 0.28.
       # Or maybe we don't need tinycc-bootstrappable for mes 0.28?
 
+      # RISC-V: using the builtin confuses tinycc for whatever reason; let's just use a plain type
+      replace --file include/stdarg.h --output include/stdarg.h --match-on "typedef __builtin_va_list va_list" --replace-with "typedef char* va_list"
+
       # mes-libc depends on max_align_t in stddef.h, which is not provided by tinycc-boot
       replace --file include/stddef.h --output include/stddef.h --match-on "void *alloca" --replace-with "
         typedef union { long double ld; long long ll; } max_align_t;
@@ -83,6 +86,33 @@ let
         fill_got(s1);
         relocate_plt(s1);
       }
+      "
+
+      # There is a riscv64-specific bug that incorrectly triggers sext when casting `unsigned int` to larger integer type.
+      # Revert unsound attempt to fix this bug. The constant case is already ok.
+      replace --file tccgen.c --output tccgen.c --match-on "if defined(TCC_TARGET_RISCV64)" --replace-with "if 0"
+      # Now, apply a more sound patch for this bug, which is actually located in the non-constant case.
+      replace --file tccgen.c --output tccgen.c --match-on "if (sbt != (VT_INT | VT_UNSIGNED))" --replace-with "
+      #if defined(TCC_TARGET_RISCV64)
+        /*
+         * Need to clear out implicit sign-extension when converting 32-bit uint to 64-bit,
+         * whether dbt is signed or not.
+         */
+        if ((sbt & VT_UNSIGNED) && ((dbt & VT_BTYPE) == VT_LLONG)) {
+          /*
+           * Temporarily cast to unsigned long to guarantee zero-extension.
+           * Finalization code below may remove VT_UNSIGNED if needed.
+           * This finalization code is not visible in the bugfix patch
+           * that adds this zext.
+           */
+          vtop->type.t = VT_LLONG | VT_UNSIGNED;
+          vpushi(32);
+          gen_op(TOK_SHL);
+          vpushi(32);
+          gen_op(TOK_SHR);
+        } else
+      #endif
+      if (sbt != (VT_INT | VT_UNSIGNED))
       "
     '')
     + "/tinycc-${rev}";
@@ -147,10 +177,23 @@ let
             tcc.s
         '';
 
+    extraSources = lib.optional buildPlatform.isRiscV64 "${src}/lib/lib-arm64.c";
+    extraObjects = lib.optional buildPlatform.isRiscV64 "lib-arm64.o";
+
     libs = recompileLibc {
       inherit pname version src;
       tcc = compiler;
       libtccOptions = mes-libc.CFLAGS + " -DTCC_TARGET_${tccTarget}=1";
+      libtccSources = [
+        "${src}/lib/libtcc1.c"
+        "${src}/lib/va_list.c"
+      ]
+      ++ extraSources;
+      libtccObjects = [
+        "libtcc1.o"
+        "va_list.o"
+      ]
+      ++ extraObjects;
     };
   };
 

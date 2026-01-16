@@ -6,6 +6,7 @@
 
 {
   lib,
+  buildPlatform,
   fetchurl,
   callPackage,
   kaem,
@@ -65,9 +66,26 @@ let
     catm ''${out}/tccdefs_.h tccdefs_.h ${config_h}
   '';
 
+  libtccSources = [
+    "${src}/lib/libtcc1.c"
+    "${src}/lib/alloca.S"
+  ]
+  ++ (lib.optional buildPlatform.isRiscV64 "${src}/lib/lib-arm64.c");
+  libtccObjects = [
+    "libtcc1.o"
+    "alloca.o"
+  ]
+  ++ (lib.optional buildPlatform.isRiscV64 "lib-arm64.o");
+
   tinycc-mes-boot = buildTinyccMes {
     pname = "tinycc-mes-boot";
-    inherit src version meta;
+    inherit
+      src
+      version
+      meta
+      libtccSources
+      libtccObjects
+      ;
     prev = tinycc-bootstrappable;
     buildOptions = [
       "-D HAVE_BITFIELD=1"
@@ -77,14 +95,6 @@ let
       "-D CONFIG_TCC_PREDEFS=1"
       "-I ${tccdefs}"
       "-D CONFIG_TCC_SEMLOCK=0"
-    ];
-    libtccSources = [
-      "${src}/lib/libtcc1.c"
-      "${src}/lib/alloca.S"
-    ];
-    libtccObjects = [
-      "libtcc1.o"
-      "alloca.o"
     ];
     libtccBuildOptions = [
       "-D HAVE_FLOAT=1"
@@ -97,7 +107,13 @@ let
 in
 buildTinyccMes {
   pname = "tinycc-mes";
-  inherit src version meta;
+  inherit
+    src
+    version
+    meta
+    libtccSources
+    libtccObjects
+    ;
   prev = tinycc-mes-boot;
   buildOptions = [
     "-std=c99"
@@ -108,14 +124,6 @@ buildTinyccMes {
     "-D CONFIG_TCC_PREDEFS=1"
     "-I ${tccdefs}"
     "-D CONFIG_TCC_SEMLOCK=0"
-  ];
-  libtccSources = [
-    "${src}/lib/libtcc1.c"
-    "${src}/lib/alloca.S"
-  ];
-  libtccObjects = [
-    "libtcc1.o"
-    "alloca.o"
   ];
   libtccBuildOptions = [
     "-D HAVE_FLOAT=1"

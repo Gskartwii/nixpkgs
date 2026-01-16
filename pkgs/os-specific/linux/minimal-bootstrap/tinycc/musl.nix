@@ -29,6 +29,7 @@ let
 
   patches = [
     ./static-link.patch
+    ./memcpy-libarm64.patch
   ];
 
   meta = {
@@ -137,7 +138,12 @@ let
         rm -f libtcc1.a
         ./tcc-musl -c -D HAVE_CONFIG_H=1 lib/libtcc1.c
         ./tcc-musl -c -D HAVE_CONFIG_H=1 lib/alloca.S
-        ./tcc-musl -ar cr libtcc1.a libtcc1.o alloca.o
+        if [ riscv64-linux = "${buildPlatform.system}" ]; then
+          ./tcc-musl -c -D HAVE_CONFIG_H=1 lib/lib-arm64.c
+          ./tcc-musl -ar cr libtcc1.a libtcc1.o alloca.o lib-arm64.o
+        else
+          ./tcc-musl -ar cr libtcc1.a libtcc1.o alloca.o
+        fi
 
         # Install
         install -D tcc-musl $out/bin/tcc
