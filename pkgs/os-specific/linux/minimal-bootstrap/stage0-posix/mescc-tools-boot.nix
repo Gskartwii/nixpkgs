@@ -132,8 +132,18 @@ rec {
   # Phase-4 Build cc_arch from M0 #
   ################################
 
+  cc_arch_src =
+    if hostPlatform.isRiscV64 then
+      run "cc_arch_rv64_c" catm [
+        out
+        "${src}/${stage0Arch}/${m2libcArch}_defs.M1"
+        "${src}/${stage0Arch}/cc_${m2libcArch}.M1"
+      ]
+    else
+      "${src}/${stage0Arch}/cc_${m2libcArch}.M1";
+
   cc_arch-0_hex2 = run "cc_arch-0.hex2" M0 [
-    "${src}/${stage0Arch}/cc_${m2libcArch}.M1"
+    "${cc_arch_src}"
     out
   ];
   cc_arch-1_hex2 = run "cc_arch-1.hex2" catm [
