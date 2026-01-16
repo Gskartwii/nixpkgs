@@ -23,6 +23,7 @@ let
     {
       i686-linux = "I386";
       x86_64-linux = "X86_64";
+      riscv64-linux = "RISCV64";
     }
     .${buildPlatform.system};
 
@@ -38,6 +39,7 @@ let
     platforms = [
       "i686-linux"
       "x86_64-linux"
+      "riscv64-linux"
     ];
   };
 

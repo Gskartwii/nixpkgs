@@ -27,6 +27,7 @@ let
     {
       i686-linux = "int";
       x86_64-linux = "long";
+      riscv64-linux = "long";
     }
     .${buildPlatform.system};
   uintptr = "unsigned ${intptr}";
@@ -54,6 +55,7 @@ let
     {
       i686-linux = "x86";
       x86_64-linux = "x86_64";
+      riscv64-linux = "riscv64";
     }
     .${buildPlatform.system};
 
@@ -78,6 +80,7 @@ let
     platforms = [
       "i686-linux"
       "x86_64-linux"
+      "riscv64-linux"
     ];
   };
 

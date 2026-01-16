@@ -15,6 +15,7 @@ let
     {
       i686-linux = "x86";
       x86_64-linux = "x86_64";
+      riscv64-linux = "riscv64";
     }
     .${buildPlatform.system};
 
@@ -51,6 +52,7 @@ kaem.runCommand "${pname}-${version}"
       platforms = [
         "i686-linux"
         "x86_64-linux"
+        "riscv64-linux"
       ];
     };
   }

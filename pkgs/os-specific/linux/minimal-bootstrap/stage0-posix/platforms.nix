@@ -9,6 +9,7 @@ rec {
   platforms = [
     "aarch64-linux"
     "i686-linux"
+    "riscv64-linux"
     "x86_64-linux"
   ];
 
@@ -17,6 +18,7 @@ rec {
     {
       "aarch64-linux" = "AArch64";
       "i686-linux" = "x86";
+      "riscv64-linux" = "riscv64";
       "x86_64-linux" = "AMD64";
     }
     .${hostPlatform.system} or (throw "Unsupported system: ${hostPlatform.system}");
@@ -32,6 +34,7 @@ rec {
     {
       "aarch64-linux" = "0x00600000";
       "i686-linux" = "0x08048000";
+      "riscv64-linux" = "0x00600000";
       "x86_64-linux" = "0x00600000";
     }
     .${hostPlatform.system} or (throw "Unsupported system: ${hostPlatform.system}");

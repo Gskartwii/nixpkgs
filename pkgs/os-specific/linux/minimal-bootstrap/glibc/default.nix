@@ -29,8 +29,9 @@ let
 
   linkerFile =
     {
-      x86_64-linux = "ld-linux-x86-64";
-      i686-linux = "ld-linux";
+      x86_64-linux = "ld-linux-x86-64.so.2";
+      i686-linux = "ld-linux.so.2";
+      riscv64-linux = "ld-linux-riscv64-lp64d.so.1";
     }
     .${buildPlatform.system};
 
@@ -72,7 +73,7 @@ bash.runCommand "${pname}-${version}"
           }
           EOF
           gcc \
-            -Wl,--dynamic-linker=${result}/lib/${linkerFile}.so.2 \
+            -Wl,--dynamic-linker=${result}/lib/${linkerFile} \
             -B${result}/lib \
             -I${result}/include \
             -o test test.c

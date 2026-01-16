@@ -27,6 +27,7 @@ let
     {
       i686-linux = "ld-linux.so.2";
       x86_64-linux = "ld-linux-x86-64.so.2";
+      riscv64-linux = "ld-linux-riscv64-lp64d.so.1";
     }
     .${hostPlatform.system};
 
