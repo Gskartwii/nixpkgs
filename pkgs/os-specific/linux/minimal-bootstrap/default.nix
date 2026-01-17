@@ -151,7 +151,7 @@ lib.makeScope
         gcc46-cxx = callPackage ./gcc/4.6.cxx.nix {
           gcc = gcc46;
           gnumake = gnumake-musl;
-          gnutar = gnutar-musl;
+          gnutar = gnutar-latest;
         };
 
         gcc10 = callPackage ./gcc/10.nix {

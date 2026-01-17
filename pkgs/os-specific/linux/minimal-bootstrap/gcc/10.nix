@@ -11,6 +11,7 @@
   gnumake,
   gnused,
   gnugrep,
+  gnupatch,
   gawk,
   diffutils,
   findutils,
@@ -54,6 +55,21 @@ let
     url = "https://gcc.gnu.org/pub/gcc/infrastructure/isl-${islVersion}.tar.bz2";
     hash = "sha256-/PeN2WVsEOuM+fvV9ZoLawE4YgX+GTSzsoegoYmBRcA=";
   };
+
+  patches = [
+    # Unify library paths across architectures.
+    ./v10-riscv-linux-libpath.patch
+    (fetchurl {
+      # RISC-V: Make __divdi3 handle div the same as hardware
+      url = "https://github.com/gcc-mirror/gcc/commit/d465a40200324d56c51f02f2c5807e716f9c8775.diff";
+      hash = "sha256-WVVC6YD6I7k7LUOvR31gnrmrc257MWjYs7UmijONGYc=";
+    })
+    (fetchurl {
+      # RISC-V: jal cannot refer to a default visibility symbol for shared
+      url = "https://github.com/gcc-mirror/gcc/commit/45116f342057b7facecd3d05c2091ce3a77eda59.diff";
+      hash = "sha256-z7NkQu5l2brCcf7LJTL5vDrFeExDQHFm6rnj9N00FAU=";
+    })
+  ];
 in
 bash.runCommand "${pname}-${version}"
   {
@@ -65,6 +81,7 @@ bash.runCommand "${pname}-${version}"
       gnumake
       gnused
       gnugrep
+      gnupatch
       gawk
       diffutils
       findutils
@@ -121,6 +138,7 @@ bash.runCommand "${pname}-${version}"
     ln -s ../isl-${islVersion} isl
 
     # Patch
+    ${lib.concatMapStringsSep "\n" (f: "patch -Np1 -i ${f}") patches}
     # doesn't recognise musl
     sed -i 's|"os/gnu-linux"|"os/generic"|' libstdc++-v3/configure.host
 
@@ -138,11 +156,20 @@ bash.runCommand "${pname}-${version}"
       --host=${hostPlatform.config} \
       --with-native-system-header-dir=/include \
       --with-sysroot=${musl} \
+      --enable-initfini-array \
       --enable-languages=c,c++ \
+      --disable-analyzer \
       --disable-bootstrap \
+      --disable-decimal-float \
       --disable-dependency-tracking \
+      --disable-gcov \
+      --disable-libitm \
+      --disable-libgomp \
       --disable-libmpx \
+      --disable-libquadmath \
       --disable-libsanitizer \
+      --disable-libssp \
+      --disable-libvtv \
       --disable-lto \
       --disable-multilib \
       --disable-plugin

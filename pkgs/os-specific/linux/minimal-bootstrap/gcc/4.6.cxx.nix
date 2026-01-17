@@ -9,7 +9,6 @@
   musl,
   binutils,
   gnumake,
-  gnupatch,
   gnused,
   gnugrep,
   gawk,
@@ -50,10 +49,11 @@ let
     sha256 = "1hzci2zrrd7v3g1jk35qindq05hbl0bhjcyyisq9z209xb3fqzb1";
   };
 
-  patches = [
-    # Remove hardcoded NATIVE_SYSTEM_HEADER_DIR
-    ./no-system-headers.patch
-  ];
+  riscvForkCommit = "d7eeaf6c671560d76bce7218456e4ec49b05c26e";
+  riscvForkSrc = fetchurl {
+    url = "https://codeberg.org/ekaitz-zarraga/gcc/archive/${riscvForkCommit}.tar.gz";
+    hash = "sha256-fi+s4ZhaCSiBsVhrA9eb3lz1sgcouHR/wxf04Fu+rAQ=";
+  };
 
   # config.sub was generated with outdated autotools, which get confused by
   # 4-component target tuples
@@ -68,7 +68,6 @@ bash.runCommand "${pname}-${version}"
       gcc
       binutils
       gnumake
-      gnupatch
       gnused
       gnugrep
       gawk
@@ -112,21 +111,36 @@ bash.runCommand "${pname}-${version}"
   }
   ''
     # Unpack
-    tar xzf ${src}
-    tar xzf ${ccSrc}
+    tar xzf ${riscvForkSrc}
     tar xzf ${gmp}
     tar xzf ${mpfr}
     tar xzf ${mpc}
-    cd gcc-${version}
+    # Unpack even the original source code for generated source files.
+    tar xzf ${src}
+
+    cd gcc-${riscvForkCommit}
 
     ln -s ../gmp-${gmpVersion} gmp
     ln -s ../mpfr-${mpfrVersion} mpfr
     ln -s ../mpc-${mpcVersion} mpc
 
     # Patch
-    ${lib.concatMapStringsSep "\n" (f: "patch -Np1 -i ${f}") patches}
+    #
+    # Generated source file that is excluded from RISC-V; copy from original
+    # source release.
+    cp ../gcc-${version}/gcc/gengtype-lex.c gcc/gengtype-lex.c
+
     # doesn't recognise musl
     sed -i 's|"os/gnu-linux"|"os/generic"|' libstdc++-v3/configure.host
+
+    # Unify libgcc location directory across RISC-V and x86
+    sed -i 's|#define STARTFILE_PREFIX_SPEC 			\\|#define STARTFILE_PREFIX_SPEC ""|' gcc/config/riscv/riscv.h
+    sed -i 's|"/lib|// "/lib|' gcc/config/riscv/riscv.h
+    sed -i 's|"/usr/lib|// "/usr/lib|' gcc/config/riscv/riscv.h
+
+    # Musl compatibility patch.
+    sed -i 's/struct ucontext_t/ucontext_t/' gcc/config/riscv/linux-unwind.h
+
 
     # Configure
     export CC="gcc -Wl,-dynamic-linker -Wl,${musl}/lib/libc.so"
@@ -141,13 +155,23 @@ bash.runCommand "${pname}-${version}"
       --host=${fakeHostPlatform} \
       --with-native-system-header-dir=${musl}/include \
       --with-build-sysroot=${musl} \
-      --enable-languages=c,c++ \
       --disable-bootstrap \
+      --disable-decimal-float \
       --disable-dependency-tracking \
+      --disable-libatomic \
+      --disable-libgomp \
       --disable-libmudflap \
-      --disable-libstdcxx-pch \
+      --disable-libquadmath \
+      --disable-libssp \
+      --disable-multiarch \
+      --disable-multilib \
+      --disable-nls \
       --disable-lto \
-      --disable-multilib
+      --disable-lto-plugin \
+      --disable-plugin \
+      --disable-threads \
+      --enable-initfini-array \
+      --enable-languages=c,c++
 
     # Build
     make -j $NIX_BUILD_CORES

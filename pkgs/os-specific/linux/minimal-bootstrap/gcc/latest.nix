@@ -11,6 +11,7 @@
   gnumake,
   gnused,
   gnugrep,
+  gnupatch,
   gawk,
   diffutils,
   findutils,
@@ -51,6 +52,11 @@ let
     url = "https://gcc.gnu.org/pub/gcc/infrastructure/isl-${islVersion}.tar.bz2";
     hash = "sha256-/PeN2WVsEOuM+fvV9ZoLawE4YgX+GTSzsoegoYmBRcA=";
   };
+
+  patches = [
+    # Unify library paths across architectures.
+    ./v15-riscv-linux-libpath.patch
+  ];
 in
 bash.runCommand "${pname}-${version}"
   {
@@ -62,6 +68,7 @@ bash.runCommand "${pname}-${version}"
       gnumake
       gnused
       gnugrep
+      gnupatch
       gawk
       diffutils
       findutils
@@ -118,6 +125,7 @@ bash.runCommand "${pname}-${version}"
     ln -s ../isl-${islVersion} isl
 
     # Patch
+    ${lib.concatMapStringsSep "\n" (f: "patch -Np1 -i ${f}") patches}
     # force musl even if host triple is gnu
     sed -i 's|"os/gnu-linux"|"os/generic"|' libstdc++-v3/configure.host
 
