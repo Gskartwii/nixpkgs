@@ -110,6 +110,10 @@ bootBash.runCommand "${pname}-${version}"
     # Configure
     export CC="tcc -B ${tinycc.libs}/lib"
     export AR="tcc -ar"
+
+    # test crashes on riscv64
+    export bash_cv_func_sigsetjmp=no
+
     export LD=tcc
     bash ./configure \
       --prefix=$out \
