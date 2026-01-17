@@ -79,6 +79,14 @@ bash.runCommand "${pname}-${version}"
     rm src/math/i386/*.c
     rm src/math/x86_64/*.c
 
+    # RISC-V: Single-argument fscsr is not implemented in tinycc.
+    # Let's spell it out in full.
+    sed -i 's/fscsr t1/fscsr x0, t1/' src/fenv/riscv64/fenv.S
+    # RISC-V: Let's help tcc assembler realize we have immediates
+    sed -i 's/add sp,sp,-16/addi sp,sp,-16/' src/ldso/riscv64/tlsdesc.s
+    sed -i 's/add sp,sp,16/addi sp,sp,16/' src/ldso/riscv64/tlsdesc.s
+    sed -i 's/sll a0,a0,3/slli a0,a0,3/' src/ldso/riscv64/tlsdesc.s
+
     # Configure
     bash ./configure \
       --prefix=$out \
