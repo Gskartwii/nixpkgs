@@ -114,6 +114,11 @@ bootBash.runCommand "${pname}-${version}"
     # test crashes on riscv64
     export bash_cv_func_sigsetjmp=no
 
+    # tcc handles linking poorly and can't deal with linking strtod without
+    # linking memmove etc.
+    # So we bypass this test.
+    export ac_cv_func_strtod=yes
+
     export LD=tcc
     bash ./configure \
       --prefix=$out \

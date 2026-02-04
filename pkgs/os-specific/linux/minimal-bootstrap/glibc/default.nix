@@ -31,6 +31,7 @@ let
     {
       x86_64-linux = "ld-linux-x86-64.so.2";
       i686-linux = "ld-linux.so.2";
+      aarch64-linux = "ld-linux-aarch64.so.1";
       riscv64-linux = "ld-linux-riscv64-lp64d.so.1";
     }
     .${buildPlatform.system};

@@ -19,11 +19,12 @@
 let
   inherit (callPackage ./common.nix { }) buildTinyccMes recompileLibc;
 
-  version = "unstable-2024-07-07";
-  rev = "ea3900f6d5e71776c5cfabcabee317652e3a19ee";
+  version = "unstable-2026-02-04";
+  rev = "773e2e6765efc01706a45d6aef7a6106ab246ef9";
 
   arch =
     {
+      aarch64-linux = "aarch64";
       i686-linux = "x86";
       x86_64-linux = "x86_64";
       riscv64-linux = "riscv64";
@@ -32,6 +33,7 @@ let
 
   tccTarget =
     {
+      aarch64-linux = "ARM64";
       i686-linux = "I386";
       x86_64-linux = "X86_64";
       riscv64-linux = "RISCV64";
@@ -39,9 +41,10 @@ let
     .${buildPlatform.system};
 
   tarball = fetchurl {
-    url = "https://gitlab.com/janneke/tinycc/-/archive/${rev}/tinycc-${rev}.tar.gz";
-    sha256 = "sha256-16JBGJATAWP+lPylOi3+lojpdv0SR5pqyxOV2PiVx0A=";
+    url = "https://codeberg.org/aleksi/tinycc-bootstrappable/archive/${rev}.tar.gz";
+    hash = "sha256-6n6gfbGaCyJv/bh6pN88hpTVydETURMQrdkpfaO6Qa8=";
   };
+
   src =
     (kaem.runCommand "tinycc-bootstrappable-${version}-source" { } ''
       ungz --file ${tarball} --output tinycc.tar
@@ -50,7 +53,7 @@ let
       untar --file ''${NIX_BUILD_TOP}/tinycc.tar
 
       # Patch
-      cd tinycc-${rev}
+      cd tinycc-bootstrappable
 
       cp ${mes-libc}/lib/libtcc1.c lib/libtcc1.c
 
@@ -93,7 +96,7 @@ let
       replace --file tccgen.c --output tccgen.c --match-on "if defined(TCC_TARGET_RISCV64)" --replace-with "if 0"
       # Now, apply a more sound patch for this bug, which is actually located in the non-constant case.
       replace --file tccgen.c --output tccgen.c --match-on "if (sbt != (VT_INT | VT_UNSIGNED))" --replace-with "
-      #if defined(TCC_TARGET_RISCV64)
+      #if defined(TCC_TARGET_RISCV64) || defined(TCC_TARGET_ARM64)
         /*
          * Need to clear out implicit sign-extension when converting 32-bit uint to 64-bit,
          * whether dbt is signed or not.
@@ -115,7 +118,7 @@ let
       if (sbt != (VT_INT | VT_UNSIGNED))
       "
     '')
-    + "/tinycc-${rev}";
+    + "/tinycc-bootstrappable";
 
   meta = {
     description = "Tiny C Compiler's bootstrappable fork";
@@ -123,6 +126,7 @@ let
     license = lib.licenses.lgpl21Only;
     teams = [ lib.teams.minimal-bootstrap ];
     platforms = [
+      "aarch64-linux"
       "i686-linux"
       "x86_64-linux"
       "riscv64-linux"
@@ -177,8 +181,8 @@ let
             tcc.s
         '';
 
-    extraSources = lib.optional buildPlatform.isRiscV64 "${src}/lib/lib-arm64.c";
-    extraObjects = lib.optional buildPlatform.isRiscV64 "lib-arm64.o";
+    extraSources = lib.optional (buildPlatform.isRiscV64 || buildPlatform.isAarch64) "${src}/lib/lib-arm64.c";
+    extraObjects = lib.optional (buildPlatform.isRiscV64 || buildPlatform.isAarch64) "lib-arm64.o";
 
     libs = recompileLibc {
       inherit pname version src;

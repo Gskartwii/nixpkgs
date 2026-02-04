@@ -19,12 +19,12 @@ rec {
         "${src}/lib/libtcc1.c"
         "${src}/lib/va_list.c"
       ]
-      ++ (lib.optional buildPlatform.isRiscV64 "${src}/lib/lib-arm64.c"),
+      ++ (lib.optional (buildPlatform.isRiscV64 || buildPlatform.isAarch64) "${src}/lib/lib-arm64.c"),
       libtccObjects ? [
         "libtcc1.o"
         "va_list.o"
       ]
-      ++ (lib.optional buildPlatform.isRiscV64 "lib-arm64.o"),
+      ++ (lib.optional (buildPlatform.isRiscV64 || buildPlatform.isAarch64) "lib-arm64.o"),
     }:
     let
 
@@ -70,18 +70,19 @@ rec {
         "${src}/lib/libtcc1.c"
         "${src}/lib/va_list.c"
       ]
-      ++ (lib.optional buildPlatform.isRiscV64 "${src}/lib/lib-arm64.c"),
+      ++ (lib.optional (buildPlatform.isRiscV64 || buildPlatform.isAarch64) "${src}/lib/lib-arm64.c"),
       libtccObjects ? [
         "libtcc1.o"
         "va_list.o"
       ]
-      ++ (lib.optional buildPlatform.isRiscV64 "lib-arm64.o"),
+      ++ (lib.optional (buildPlatform.isRiscV64 || buildPlatform.isAarch64) "lib-arm64.o"),
       libtccBuildOptions,
       meta,
     }:
     let
       tccTarget =
         {
+          aarch64-linux = "ARM64";
           i686-linux = "I386";
           x86_64-linux = "X86_64";
           riscv64-linux = "RISCV64";

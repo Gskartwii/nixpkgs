@@ -11,25 +11,30 @@
 }:
 let
   pname = "tinycc-musl";
-  version = "unstable-2025-12-03";
-  rev = "cb41cbfe717e4c00d7bb70035cda5ee5f0ff9341";
+  version = "unstable-2026-02-04";
+  rev = "f35661fd7121e6acf7eab27c8f7bb6c290d48b3d";
 
   src = fetchurl {
-    url = "https://repo.or.cz/tinycc.git/snapshot/${rev}.tar.gz";
-    hash = "sha256-MRuqq3TKcfIahtUWdhAcYhqDiGPkAjS8UTMsDE+/jGU=";
+    url = "https://codeberg.org/aleksi/tinycc/archive/${rev}.tar.gz";
+    hash = "sha256-lkljuKDG61ENvBiry6xYlSZ865d8G0jtFbfhyLBa0po=";
   };
+
+  #src = fetchurl {
+  #  url = "https://repo.or.cz/tinycc.git/snapshot/${rev}.tar.gz";
+  #  hash = "sha256-MRuqq3TKcfIahtUWdhAcYhqDiGPkAjS8UTMsDE+/jGU=";
+  #};
 
   tccTarget =
     {
       i686-linux = "I386";
       x86_64-linux = "X86_64";
       riscv64-linux = "RISCV64";
+      aarch64-linux = "ARM64";
     }
     .${buildPlatform.system};
 
   patches = [
     ./static-link.patch
-    ./memcpy-libarm64.patch
   ];
 
   meta = {
@@ -40,6 +45,7 @@ let
     platforms = [
       "i686-linux"
       "x86_64-linux"
+      "aarch64-linux"
       "riscv64-linux"
     ];
   };
@@ -59,7 +65,8 @@ let
       ''
         # Unpack
         tar xzf ${src}
-        cd tinycc-${builtins.substring 0 7 rev}
+        #cd tinycc-${builtins.substring 0 7 rev}
+        cd tinycc
 
         # Patch
         ${lib.concatMapStringsSep "\n" (f: "patch -Np0 -i ${f}") patches}
@@ -111,7 +118,7 @@ let
         tcc -ar cr libtcc1.a libtcc1.o
 
         # Rebuild tcc-musl with itself
-        ./tcc-musl \
+        ./tcc-musl -g \
           -v \
           -static \
           -o tcc-musl \
@@ -136,10 +143,14 @@ let
           tcc.c
         # libtcc1.a
         rm -f libtcc1.a
+
+				mkdir $out
+        cp tcc-musl $out/tcc-musl-mid
+
         ./tcc-musl -c -D HAVE_CONFIG_H=1 lib/libtcc1.c
         ./tcc-musl -c -D HAVE_CONFIG_H=1 lib/alloca.S
-        if [ riscv64-linux = "${buildPlatform.system}" ]; then
-          ./tcc-musl -c -D HAVE_CONFIG_H=1 lib/lib-arm64.c
+        if [ riscv64-linux = "${buildPlatform.system}" ] || [ aarch64-linux = "${buildPlatform.system}" ]; then
+          ./tcc-musl -g -c -D HAVE_CONFIG_H=1 lib/lib-arm64.c
           ./tcc-musl -ar cr libtcc1.a libtcc1.o alloca.o lib-arm64.o
         else
           ./tcc-musl -ar cr libtcc1.a libtcc1.o alloca.o

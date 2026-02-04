@@ -15,16 +15,18 @@
 let
   pname = "mes";
   version = "0.27.1";
+  rev = "c4f4ba34acb8fe15d0f0ed0f2c281fce7ac6fdae";
 
   src = fetchurl {
-    url = "mirror://gnu/mes/mes-${version}.tar.gz";
-    hash = "sha256-GDpA6kfqSfih470bnRLmdjdNZNY7x557wa59Zz398l0=";
+    url = "https://codeberg.org/aleksi/mes/archive/${rev}.tar.gz";
+    hash = "sha256-KBwTetaz4Hu8BXiWn3HrsUa34rW0c1COydTglkakKnU=";
   };
 
   nyacc = callPackage ./nyacc.nix { inherit nyacc; };
 
   intptr =
     {
+      aarch64-linux = "long";
       i686-linux = "int";
       x86_64-linux = "long";
       riscv64-linux = "long";
@@ -53,6 +55,7 @@ let
 
   arch =
     {
+      aarch64-linux = "aarch64";
       i686-linux = "x86";
       x86_64-linux = "x86_64";
       riscv64-linux = "riscv64";
@@ -78,6 +81,7 @@ let
     license = lib.licenses.gpl3Plus;
     teams = [ lib.teams.minimal-bootstrap ];
     platforms = [
+      "aarch64-linux"
       "i686-linux"
       "x86_64-linux"
       "riscv64-linux"
@@ -100,7 +104,8 @@ let
         cd ''${out}
         untar --non-strict --file ''${NIX_BUILD_TOP}/mes.tar # ignore symlinks
 
-        MES_PREFIX=''${out}/mes-${version}
+        #MES_PREFIX=''${out}/mes-${rev}
+        MES_PREFIX=''${out}/mes
 
         cd ''${MES_PREFIX}
 
@@ -240,7 +245,7 @@ let
         chmod 555 ''${bin}/bin/mes-m2
       '';
 
-  srcPrefix = "${srcPost.out}/mes-${version}";
+  srcPrefix = "${srcPost.out}/mes";
 
   cc = "${srcPost.bin}/bin/mes-m2";
   ccArgs = [

@@ -26,6 +26,7 @@ let
   version = "15.2.0";
   linkerName =
     {
+      aarch64-linux = "ld-linux-aarch64.so.1";
       i686-linux = "ld-linux.so.2";
       x86_64-linux = "ld-linux-x86-64.so.2";
       riscv64-linux = "ld-linux-riscv64-lp64d.so.1";
