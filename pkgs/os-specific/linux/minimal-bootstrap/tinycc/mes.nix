@@ -16,7 +16,7 @@ let
   inherit (callPackage ./common.nix { }) buildTinyccMes;
 
   version = "unstable-2026-02-04";
-  rev = "f35661fd7121e6acf7eab27c8f7bb6c290d48b3d";
+  rev = "2125026688ba461af889ae20ff59f74abaaa767c";
 
   #tarball = fetchurl {
   #  url = "https://repo.or.cz/tinycc.git/snapshot/${rev}.tar.gz";
@@ -25,7 +25,7 @@ let
 
   tarball = fetchurl {
     url = "https://codeberg.org/aleksi/tinycc/archive/${rev}.tar.gz";
-    hash = "sha256-lkljuKDG61ENvBiry6xYlSZ865d8G0jtFbfhyLBa0po=";
+    hash = "sha256-XcF0Bct24gj4kQuxjKDivvTel3m89YclO+q6Bg4o7uc=";
   };
 
   src =

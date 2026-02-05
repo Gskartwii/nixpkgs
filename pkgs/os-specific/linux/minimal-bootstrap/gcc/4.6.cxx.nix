@@ -146,7 +146,9 @@ bash.runCommand "${pname}-${version}"
     # Patch
     #
     # Generated source file that is excluded from Git tree; copy from release tarball.
-    cp ../${altSources.release.dir}/gcc/gengtype-lex.c gcc/gengtype-lex.c
+    if test ! -e gcc/gengtype-lex.c; then
+      cp ../${altSources.release.dir}/gcc/gengtype-lex.c gcc/gengtype-lex.c
+    fi
 
     # doesn't recognise musl
     sed -i 's|"os/gnu-linux"|"os/generic"|' libstdc++-v3/configure.host
@@ -179,6 +181,7 @@ bash.runCommand "${pname}-${version}"
       --disable-dependency-tracking \
       --disable-libatomic \
       --disable-libgomp \
+      --disable-libitm \
       --disable-libmudflap \
       --disable-libquadmath \
       --disable-libssp \

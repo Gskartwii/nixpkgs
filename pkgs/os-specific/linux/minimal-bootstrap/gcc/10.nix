@@ -70,6 +70,9 @@ let
       hash = "sha256-z7NkQu5l2brCcf7LJTL5vDrFeExDQHFm6rnj9N00FAU=";
     })
   ];
+
+  # see: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=95129
+  extraSpecs = lib.optionalString buildPlatform.isAarch64 "--with-specs=\"-mno-outline-atomics\"";
 in
 bash.runCommand "${pname}-${version}"
   {
@@ -172,7 +175,8 @@ bash.runCommand "${pname}-${version}"
       --disable-libvtv \
       --disable-lto \
       --disable-multilib \
-      --disable-plugin
+      --disable-plugin \
+			${extraSpecs}
 
     # Build
     make -j $NIX_BUILD_CORES

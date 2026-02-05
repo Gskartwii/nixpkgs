@@ -57,6 +57,11 @@ let
     # Unify library paths across architectures.
     ./v15-riscv-linux-libpath.patch
   ];
+
+  # see: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=95129
+  extraSpecs = lib.optionalString buildPlatform.isAarch64 "--with-specs=\"-mno-outline-atomics\"";
+  fakeBuildPlatform = (lib.strings.removeSuffix "-gnu" buildPlatform.config) + "-musl";
+  fakeHostPlatform = (lib.strings.removeSuffix "-gnu" hostPlatform.config) + "-musl";
 in
 bash.runCommand "${pname}-${version}"
   {
@@ -137,8 +142,8 @@ bash.runCommand "${pname}-${version}"
 
     bash ./configure \
       --prefix=$out \
-      --build=${buildPlatform.config} \
-      --host=${hostPlatform.config} \
+      --build=${fakeBuildPlatform} \
+      --host=${fakeHostPlatform} \
       --with-native-system-header-dir=/include \
       --with-sysroot=${musl} \
       --enable-languages=c,c++ \
@@ -147,7 +152,8 @@ bash.runCommand "${pname}-${version}"
       --disable-libsanitizer \
       --disable-lto \
       --disable-multilib \
-      --disable-plugin
+      --disable-plugin \
+			${extraSpecs}
 
     # Build
     make -j $NIX_BUILD_CORES

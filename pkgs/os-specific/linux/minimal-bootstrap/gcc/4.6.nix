@@ -128,7 +128,9 @@ bash.runCommand "${pname}-${version}"
     # Patch
     #
     # Generated source file that is excluded from Git tree; copy from release tarball.
-    cp ../${altSources.release.dir}/gcc/gengtype-lex.c gcc/gengtype-lex.c
+    if test ! -e gcc/gengtype-lex.c; then
+      cp ../${altSources.release.dir}/gcc/gengtype-lex.c gcc/gengtype-lex.c
+    fi
 
 		if test -e gcc/config/riscv; then
       # Musl compatibility patch.

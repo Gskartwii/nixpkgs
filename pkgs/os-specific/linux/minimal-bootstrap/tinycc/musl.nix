@@ -12,11 +12,11 @@
 let
   pname = "tinycc-musl";
   version = "unstable-2026-02-04";
-  rev = "f35661fd7121e6acf7eab27c8f7bb6c290d48b3d";
+  rev = "2125026688ba461af889ae20ff59f74abaaa767c";
 
   src = fetchurl {
     url = "https://codeberg.org/aleksi/tinycc/archive/${rev}.tar.gz";
-    hash = "sha256-lkljuKDG61ENvBiry6xYlSZ865d8G0jtFbfhyLBa0po=";
+    hash = "sha256-XcF0Bct24gj4kQuxjKDivvTel3m89YclO+q6Bg4o7uc=";
   };
 
   #src = fetchurl {
@@ -70,10 +70,6 @@ let
 
         # Patch
         ${lib.concatMapStringsSep "\n" (f: "patch -Np0 -i ${f}") patches}
-        replace --file i386-asm.c --output i386-asm.c --match-on "switch(size)" --replace-with "if (reg >= 8) { cstr_printf(add_str, \"%%r%d%c\", reg, (size == 1) ? 'b' : ((size == 2) ? 'w' : ((size == 4) ? 'd' : ' '))); return; } switch(size)"
-
-        # If performing ptr + (-1) for example, the offset should be ptrdiff_t and not size_t
-        replace --file tccgen.c --output tccgen.c --match-on "vpush_type_size(pointed_type(&vtop[-1].type), &align);" --replace-with "vpush_type_size(pointed_type(&vtop[-1].type), &align); if (!(vtop[-1].type.t & VT_UNSIGNED)) gen_cast_s(VT_PTRDIFF_T);"
 
         # Configure
         touch config.h

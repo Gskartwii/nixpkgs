@@ -20,7 +20,7 @@ let
   inherit (callPackage ./common.nix { }) buildTinyccMes recompileLibc;
 
   version = "unstable-2026-02-04";
-  rev = "773e2e6765efc01706a45d6aef7a6106ab246ef9";
+  rev = "014116c4350085132005871e43363c29bbb1777a";
 
   arch =
     {
@@ -42,7 +42,7 @@ let
 
   tarball = fetchurl {
     url = "https://codeberg.org/aleksi/tinycc-bootstrappable/archive/${rev}.tar.gz";
-    hash = "sha256-6n6gfbGaCyJv/bh6pN88hpTVydETURMQrdkpfaO6Qa8=";
+    hash = "sha256-Z0S9KtEN0L5+bINscb6llmPVaD12fgPLBKK/W6WUQbg=";
   };
 
   src =
@@ -59,64 +59,6 @@ let
 
       # Static link by default
       replace --file libtcc.c --output libtcc.c --match-on "s->ms_extensions = 1;" --replace-with "s->ms_extensions = 1; s->static_link = 1;"
-
-      # TODO: may not need following patches for mes 0.28.
-      # Or maybe we don't need tinycc-bootstrappable for mes 0.28?
-
-      # RISC-V: using the builtin confuses tinycc for whatever reason; let's just use a plain type
-      replace --file include/stdarg.h --output include/stdarg.h --match-on "typedef __builtin_va_list va_list" --replace-with "typedef char* va_list"
-
-      # mes-libc depends on max_align_t in stddef.h, which is not provided by tinycc-boot
-      replace --file include/stddef.h --output include/stddef.h --match-on "void *alloca" --replace-with "
-        typedef union { long double ld; long long ll; } max_align_t;
-        void *alloca
-      "
-      # VLA is broken in mescc 0.27.1. alloca is not available either. Let's just use malloc and leak on x86_64.
-      replace --file x86_64-gen.c --output x86_64-gen.c --match-on "char _onstack[nb_args], *onstack = _onstack;" --replace-with "char *onstack = tcc_malloc(nb_args);"
-
-      # Abort is not provided by mescc
-      replace --file x86_64-gen.c --output x86_64-gen.c --match-on "abort();" --replace-with "/* abort(); */"
-
-      # Work around bug in mescc.
-      replace --file x86_64-gen.c --output x86_64-gen.c --match-on "g(vtop->c.i & (ll ? 63 : 31));" --replace-with "if (ll) g(vtop->c.i & 63); else g(vtop->c.i & 31);"
-
-      # Normally tinycc only performs relocations on the PLT when creating a dynamically-linked executable.
-      # This is fine for most targets because a PLT is not generated. But on x86_64 we do generate a PLT and hence
-      # we must assure plt->got references are appropriately relocated.
-      # This patch is applied even if we aren't targeting x86_64. Because there's no PLT outside x86_64, it's basically a no-op.
-      replace --file tccelf.c --output tccelf.c --match-on "fill_got(s1);" --replace-with "
-      {
-        fill_got(s1);
-        relocate_plt(s1);
-      }
-      "
-
-      # There is a riscv64-specific bug that incorrectly triggers sext when casting `unsigned int` to larger integer type.
-      # Revert unsound attempt to fix this bug. The constant case is already ok.
-      replace --file tccgen.c --output tccgen.c --match-on "if defined(TCC_TARGET_RISCV64)" --replace-with "if 0"
-      # Now, apply a more sound patch for this bug, which is actually located in the non-constant case.
-      replace --file tccgen.c --output tccgen.c --match-on "if (sbt != (VT_INT | VT_UNSIGNED))" --replace-with "
-      #if defined(TCC_TARGET_RISCV64) || defined(TCC_TARGET_ARM64)
-        /*
-         * Need to clear out implicit sign-extension when converting 32-bit uint to 64-bit,
-         * whether dbt is signed or not.
-         */
-        if ((sbt & VT_UNSIGNED) && ((dbt & VT_BTYPE) == VT_LLONG)) {
-          /*
-           * Temporarily cast to unsigned long to guarantee zero-extension.
-           * Finalization code below may remove VT_UNSIGNED if needed.
-           * This finalization code is not visible in the bugfix patch
-           * that adds this zext.
-           */
-          vtop->type.t = VT_LLONG | VT_UNSIGNED;
-          vpushi(32);
-          gen_op(TOK_SHL);
-          vpushi(32);
-          gen_op(TOK_SHR);
-        } else
-      #endif
-      if (sbt != (VT_INT | VT_UNSIGNED))
-      "
     '')
     + "/tinycc-bootstrappable";
 
