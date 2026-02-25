@@ -4,8 +4,8 @@
   hostPlatform,
   fetchurl,
   bash,
+  build-gcc,
   gcc,
-  musl,
   binutils,
   gnumake,
   gnupatch,
@@ -20,28 +20,26 @@
 let
   inherit (import ./common.nix { inherit lib; }) meta;
   pname = "binutils-static";
-  version = "2.45.1";
+  version = "2.44";
 
   src = fetchurl {
     url = "mirror://gnu/binutils/binutils-${version}.tar.xz";
-    hash = "sha256-X+EB5v6dGP3slZYtge1nD97l834/SPC++Hvd+GJROqU=";
+    hash = "sha256-ziAX4FnWPmfduSQOnU7EnCiTYFA1zWDpKtUxd/Q3cjc=";
   };
 
   patches = [
     # Make binutils output deterministic by default.
     ./deterministic.patch
+    ../../../../development/tools/misc/binutils/always-search-rpath.patch
   ];
 
   configureFlags = [
-    "CC=musl-gcc"
-    "LDFLAGS=--static"
     "--prefix=${placeholder "out"}"
     "--build=${buildPlatform.config}"
     "--host=${hostPlatform.config}"
 
     "--disable-dependency-tracking"
 
-    "--with-sysroot=/"
     "--enable-deterministic-archives"
     # depends on bison
     "--disable-gprofng"
@@ -63,7 +61,7 @@ bash.runCommand "${pname}-${version}"
 
     nativeBuildInputs = [
       gcc
-      musl
+      build-gcc
       binutils
       gnumake
       gnupatch

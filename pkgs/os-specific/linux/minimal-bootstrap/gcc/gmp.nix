@@ -4,6 +4,8 @@
   hostPlatform,
   fetchurl,
   bash,
+  coreutils,
+  build-gcc,
   gcc,
   binutils,
   gnumake,
@@ -13,15 +15,17 @@
   diffutils,
   findutils,
   gnutar,
+  gzip,
+  bzip2,
   xz,
 }:
 let
-  pname = "findutils-static";
-  version = "4.10.0";
+  pname = "gmp";
+  version = "6.3.0";
 
   src = fetchurl {
-    url = "mirror://gnu/findutils/findutils-${version}.tar.xz";
-    hash = "sha256-E4fgtn/yR9Kr3pmPkN+/cMFJE5Glnd/suK5ph4nwpPU=";
+    url = "mirror://gnu/gmp/gmp-${version}.tar.xz";
+    hash = "sha256-o8K4AgG4nmhhb0rTC8Zq7kknw85Q4zkpyoGdXENTiJg=";
   };
 in
 bash.runCommand "${pname}-${version}"
@@ -30,6 +34,7 @@ bash.runCommand "${pname}-${version}"
 
     nativeBuildInputs = [
       gcc
+      build-gcc
       binutils
       gnumake
       gnused
@@ -38,40 +43,39 @@ bash.runCommand "${pname}-${version}"
       diffutils
       findutils
       gnutar
+      gzip
+      bzip2
       xz
     ];
 
-    passthru.tests.get-version =
-      result:
-      bash.runCommand "${pname}-get-version-${version}" { } ''
-        ${result}/bin/find --version
-        mkdir $out
-      '';
-
     meta = {
-      description = "GNU Find Utilities, the basic directory searching utilities of the GNU operating system";
-      homepage = "https://www.gnu.org/software/findutils";
+      description = "GNU Compiler Collection, version ${version}";
+      homepage = "https://gcc.gnu.org";
       license = lib.licenses.gpl3Plus;
-      platforms = lib.platforms.unix;
       teams = [ lib.teams.minimal-bootstrap ];
+      platforms = lib.platforms.unix;
+      mainProgram = "gcc";
     };
   }
   ''
     # Unpack
     tar xf ${src}
-    cd findutils-${version}
+    cd gmp-${version}
 
     # Configure
     bash ./configure \
       --prefix=$out \
       --build=${buildPlatform.config} \
       --host=${hostPlatform.config} \
-      --disable-dependency-tracking
+      --disable-dependency-tracking \
+      --with-pic \
+      --disable-assembly \
+      CFLAGS=-std=c99 \
+      M4=false
 
     # Build
     make -j $NIX_BUILD_CORES
 
     # Install
-    make -j $NIX_BUILD_CORES install
-    rm $out/bin/updatedb
+    make -j $NIX_BUILD_CORES install-strip
   ''

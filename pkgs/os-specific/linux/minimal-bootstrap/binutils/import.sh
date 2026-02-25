@@ -1,0 +1,9 @@
+PREFIX=${PREFIX:-}
+SUFFIX=${SUFFIX:-}
+echo "export ${PREFIX}AR${SUFFIX}='@bin@/@prefix@ar'"
+echo "export ${PREFIX}AS${SUFFIX}='@bin@/@prefix@as'"
+echo "export ${PREFIX}LD${SUFFIX}='@bin@/@prefix@ld'"
+echo "export ${PREFIX}NM${SUFFIX}='@bin@/@prefix@nm'"
+echo "export ${PREFIX}OBJDUMP${SUFFIX}='@bin@/@prefix@objdump'"
+echo "export ${PREFIX}READELF${SUFFIX}='@bin@/@prefix@readelf'"
+echo "export ${PREFIX}STRIP${SUFFIX}='@bin@/@prefix@strip'"

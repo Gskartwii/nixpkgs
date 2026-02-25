@@ -12,9 +12,7 @@
   gawk,
   gnutar,
   gzip,
-  musl,
-}:
-let
+}: let
   pname = "xz";
   version = "5.8.2";
 
@@ -23,14 +21,13 @@ let
     hash = "sha256-zgnFCllieGuD5do4nJDdLBXs0JgKJY3QH3D5585YqPE=";
   };
 in
-bash.runCommand "${pname}-${version}"
+  bash.runCommand "${pname}-${version}"
   {
     inherit pname version;
 
     nativeBuildInputs = [
       binutils
       gcc
-      musl
       gnumake
       gnused
       gnugrep
@@ -39,9 +36,8 @@ bash.runCommand "${pname}-${version}"
       gzip
     ];
 
-    passthru.tests.get-version =
-      result:
-      bash.runCommand "${pname}-get-version-${version}" { } ''
+    passthru.tests.get-version = result:
+      bash.runCommand "${pname}-get-version-${version}" {} ''
         ${lib.getExe result} --version
         mkdir $out
       '';
@@ -53,7 +49,7 @@ bash.runCommand "${pname}-${version}"
         gpl2Plus
         lgpl21Plus
       ];
-      teams = [ lib.teams.minimal-bootstrap ];
+      teams = [lib.teams.minimal-bootstrap];
       platforms = lib.platforms.unix;
       mainProgram = "xz";
     };
@@ -64,10 +60,6 @@ bash.runCommand "${pname}-${version}"
     cd xz-${version}
 
     # Configure
-    export CC=musl-gcc
-    export CFLAGS=-static
-    export CXXFLAGS=-static
-    export LDFLAGS=-static
     bash ./configure \
       --prefix=$out \
       --build=${buildPlatform.config} \

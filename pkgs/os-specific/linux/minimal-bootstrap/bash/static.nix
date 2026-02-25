@@ -4,8 +4,8 @@
   hostPlatform,
   fetchurl,
   bash,
+  gcc-build,
   gcc,
-  musl,
   binutils,
   gnumake,
   gnused,
@@ -32,7 +32,6 @@ bash.runCommand "${pname}-${version}"
 
     nativeBuildInputs = [
       gcc
-      musl
       binutils
       gnumake
       gnused
@@ -56,6 +55,9 @@ bash.runCommand "${pname}-${version}"
     tar xf ${src}
     cd bash-${version}
 
+    source <(bash ${binutils}/bin/import.sh)
+    export STRIPPROG="$STRIP"
+
     # Configure
     bash ./configure \
       --prefix=$out \
@@ -64,7 +66,7 @@ bash.runCommand "${pname}-${version}"
       --without-bash-malloc \
       --disable-dependency-tracking \
       --enable-static-link \
-      CC=musl-gcc
+      CC_FOR_BUILD=${gcc-build}/bin/gcc
 
     # Build
     make -j $NIX_BUILD_CORES

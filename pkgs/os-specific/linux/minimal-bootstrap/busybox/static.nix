@@ -2,8 +2,9 @@
   lib,
   fetchurl,
   bash,
+  build-gcc,
   gcc,
-  musl,
+  build-binutils,
   binutils,
   linux-headers,
   gnumake,
@@ -30,8 +31,6 @@ let
   ];
 
   busyboxConfig = [
-    "CC=musl-gcc"
-    "HOSTCC=musl-gcc"
     "CFLAGS=-I${linux-headers}/include"
     "KCONFIG_NOTIMESTAMP=y"
     "CONFIG_PREFIX=${placeholder "out"}"
@@ -44,8 +43,9 @@ bash.runCommand "${pname}-${version}"
 
     nativeBuildInputs = [
       gcc
-      musl
+      build-gcc
       binutils
+      build-binutils
       gnumake
       gnupatch
       gnused

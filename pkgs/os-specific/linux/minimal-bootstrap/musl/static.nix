@@ -12,9 +12,9 @@
   gnutar,
   gzip,
   linux-headers,
-}:
-let
-  inherit (import ./common.nix { inherit lib; }) pname meta;
+  libgcc,
+}: let
+  inherit (import ./common.nix {inherit lib;}) pname meta;
   version = "1.2.5";
 
   src = fetchurl {
@@ -22,7 +22,7 @@ let
     hash = "sha256-qaEYu+hNh2TaDqDSizqz+uhHf8fkCF2QECuFlvx8deQ=";
   };
 in
-bash.runCommand "${pname}-${version}"
+  bash.runCommand "${pname}-${version}"
   {
     inherit pname version meta;
 
@@ -36,9 +36,10 @@ bash.runCommand "${pname}-${version}"
       gzip
     ];
 
-    passthru.tests.hello-world =
-      result:
-      bash.runCommand "${pname}-simple-program-${version}"
+    passthru = {
+      dynamicLinkerFile = "lib/libc.so";
+      tests.hello-world = result:
+        bash.runCommand "${pname}-simple-program-${version}"
         {
           nativeBuildInputs = [
             gcc
@@ -58,6 +59,7 @@ bash.runCommand "${pname}-${version}"
           ./test
           mkdir $out
         '';
+    };
   }
   ''
     # Unpack
@@ -75,6 +77,7 @@ bash.runCommand "${pname}-${version}"
       src/misc/wordexp.c
 
     # Configure
+    export CC="gcc -B${libgcc}/lib/gcc/${hostPlatform.config}/${libgcc.version} -Wl,-rpath,${gcc}/lib,-rpath,${libgcc}/lib/gcc/${hostPlatform.config}/${libgcc.version}"
     bash ./configure \
       --prefix=$out \
       --build=${buildPlatform.config} \

@@ -8795,13 +8795,15 @@ with pkgs;
   mdadm = mdadm4;
   minimal-bootstrap = recurseIntoAttrs (
     import ../os-specific/linux/minimal-bootstrap {
-      inherit (stdenv) buildPlatform hostPlatform;
+      inherit (stdenv) hostPlatform;
+      buildPlatform = buildPackages.pkgsMusl.stdenv.hostPlatform;
       inherit lib config;
       fetchurl = import ../build-support/fetchurl/boot.nix {
         inherit (stdenv.buildPlatform) system;
         inherit (config) rewriteURL;
       };
-      checkMeta = callPackage ../stdenv/generic/check-meta.nix { inherit (stdenv) hostPlatform; };
+      checkMetaBuild = callPackage ../stdenv/generic/check-meta.nix { hostPlatform = stdenv.buildPlatform; };
+      checkMetaHost = callPackage ../stdenv/generic/check-meta.nix { inherit (stdenv) hostPlatform; };
     }
   );
   minimal-bootstrap-sources =
