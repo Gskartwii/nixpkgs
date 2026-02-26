@@ -142,10 +142,17 @@ bash.runCommand "${pname}-${version}"
       --with-native-system-header-dir=/include \
       --with-sysroot=${musl} \
       --enable-languages=c,c++ \
+      --disable-serial-configure \
+      --disable-analyzer \
       --disable-bootstrap \
       --disable-dependency-tracking \
+      --disable-decimal-float \
       --disable-libmpx \
       --disable-libsanitizer \
+      --disable-libstdcxx-pch \
+      --disable-multilib \
+      --disable-nls \
+      --disable-libssp \
       --disable-lto \
       --disable-multilib \
       --disable-plugin \

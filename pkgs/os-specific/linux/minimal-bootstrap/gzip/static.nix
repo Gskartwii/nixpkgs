@@ -5,6 +5,7 @@
   fetchurl,
   bash,
   gcc,
+  libc,
   binutils,
   gnumake,
   gnused,
@@ -66,7 +67,7 @@ bash.runCommand "${pname}-${version}"
       --prefix=$out \
       --build=${buildPlatform.config} \
       --host=${hostPlatform.config} \
-      --disable-dependency-tracking
+      --disable-dependency-tracking ${lib.optionalString hostPlatform.isMusl "CFLAGS=-static"}
 
     # Build
     make -j $NIX_BUILD_CORES bin_SCRIPTS=

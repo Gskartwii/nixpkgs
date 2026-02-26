@@ -14,6 +14,8 @@
   bash,
 }: let
   pname = "gcc-wrapper";
+  extraFlags = (lib.optionalString (!libgcc.sharedAvailable) "-static-libgcc ");
+  extraFlagsC = extraFlags + (lib.optionalString targetPlatform.isMusl "-specs ${libc}/lib/musl-gcc.specs ");
 in
   bash.runCommand "${pname}-${gcc-unwrapped.version}"
   {
@@ -35,7 +37,7 @@ in
         -e 's,@libc@,${libc}/lib,' \
         -e 's,@gccinc@,${gcc-unwrapped}/lib/gcc/${targetPlatform.config}/${libgcc.version}/include,' \
         -e 's,@binutils@,${binutils}/bin,' \
-        -e 's,@extraflags@,-fPIC ${lib.optionalString (!libgcc.sharedAvailable) "-static-libgcc"},' \
+        -e 's,@extraflags@,${extraFlagsC},' \
         '${./wrapper.sh}' > "$out/bin/$(basename "$orig")"
         chmod +x "$out/bin/$(basename "$orig")"
     done
@@ -53,7 +55,7 @@ in
         -e 's,@libstdcxxarchinc@,${libstdcxx}/include/c++/${libstdcxx.version}/${targetPlatform.config},' \
         -e 's,@gccinc@,${gcc-unwrapped}/lib/gcc/${targetPlatform.config}/${libgcc.version}/include,' \
         -e 's,@binutils@,${binutils}/bin,' \
-        -e 's,@extraflags@,-fPIC ${lib.optionalString (!libgcc.sharedAvailable) "-static-libgcc"},' \
+        -e 's,@extraflags@,${extraFlags},' \
         '${./wrappercxx.sh}' > "$out/bin/$(basename "$orig")"
         chmod +x "$out/bin/$(basename "$orig")"
     done
