@@ -179,6 +179,7 @@ in
         --disable-plugin \
         --disable-plugins \
         --disable-lto
+      sed -e '/TOPLEVEL_CONFIGURE_ARGUMENTS=/d' -i Makefile
 
       # Build
       make -j $NIX_BUILD_CORES
@@ -194,4 +195,7 @@ in
         rm -rf "$out/lib64"
         ln -s lib "$out/lib64"
       fi
+      # Prevent references to build-time dependencies
+      rm -rf $out/libexec/gcc/*/*/install-tools
+      rm -rf $out/lib/gcc/*/*/install-tools
     '')

@@ -18,8 +18,7 @@
   bison,
   gnutar,
   xz,
-}:
-let
+}: let
   pname = "glibc";
   version = "2.42";
 
@@ -34,10 +33,13 @@ let
       aarch64-linux = "ld-linux-aarch64.so.1";
       i686-linux = "ld-linux.so.2";
     }
-    .${hostPlatform.system};
+    .${
+      hostPlatform.system
+    };
 
+  binutilsTargetPrefix = lib.optionalString (hostPlatform.config != buildPlatform.config) "${hostPlatform.config}-";
 in
-bash.runCommand "${pname}-${version}"
+  bash.runCommand "${pname}-${version}"
   {
     inherit pname version;
 
@@ -58,31 +60,30 @@ bash.runCommand "${pname}-${version}"
 
     passthru = {
       dynamicLinkerFile = "lib/${linkerFile}";
-      tests.hello-world =
-        result:
+      tests.hello-world = result:
         bash.runCommand "${pname}-simple-program-${version}"
-          {
-            nativeBuildInputs = [
-              gcc
-              binutils
-            ];
+        {
+          nativeBuildInputs = [
+            gcc
+            binutils
+          ];
+        }
+        ''
+          cat <<EOF >> test.c
+          #include <stdio.h>
+          int main() {
+            printf("Hello World!\n");
+            return 0;
           }
-          ''
-            cat <<EOF >> test.c
-            #include <stdio.h>
-            int main() {
-              printf("Hello World!\n");
-              return 0;
-            }
-            EOF
-            gcc \
-              -Wl,--dynamic-linker=${result}/lib/${linkerFile}.so.2 \
-              -B${result}/lib \
-              -I${result}/include \
-              -o test test.c
-            ./test
-            mkdir $out
-          '';
+          EOF
+          gcc \
+            -Wl,--dynamic-linker=${result}/lib/${linkerFile}.so.2 \
+            -B${result}/lib \
+            -I${result}/include \
+            -o test test.c
+          ./test
+          mkdir $out
+        '';
     };
 
     meta = {
@@ -90,7 +91,7 @@ bash.runCommand "${pname}-${version}"
       homepage = "https://www.gnu.org/software/libc/";
       license = lib.licenses.lgpl2Plus;
       platforms = lib.platforms.linux;
-      teams = [ lib.teams.minimal-bootstrap ];
+      teams = [lib.teams.minimal-bootstrap];
     };
   }
   ''
@@ -127,5 +128,5 @@ bash.runCommand "${pname}-${version}"
     # Install
     make -j $NIX_BUILD_CORES INSTALL_UNCOMPRESSED=yes install
     ln -s $(ls -d ${linux-headers}/include/* | grep -v scsi\$) $out/include/
-    find $out/{bin,sbin,lib,libexec} -type f -exec strip --strip-unneeded {} + || true
+    find $out/{bin,sbin,lib,libexec} -type f -exec ${binutilsTargetPrefix}strip --strip-debug {} + || true
   ''

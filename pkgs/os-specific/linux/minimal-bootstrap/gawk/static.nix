@@ -63,6 +63,6 @@ in
     make -j $NIX_BUILD_CORES
 
     # Install
-    make -j $NIX_BUILD_CORES install
+    make -j $NIX_BUILD_CORES install-strip
     rm $out/bin/gawkbug
   ''

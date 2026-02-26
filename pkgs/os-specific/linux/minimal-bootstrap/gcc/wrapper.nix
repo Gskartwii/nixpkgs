@@ -15,7 +15,6 @@
 }: let
   pname = "gcc-wrapper";
   extraFlags = (lib.optionalString (!libgcc.sharedAvailable) "-static-libgcc ");
-  extraFlagsC = extraFlags + (lib.optionalString targetPlatform.isMusl "-specs ${libc}/lib/musl-gcc.specs ");
 in
   bash.runCommand "${pname}-${gcc-unwrapped.version}"
   {
@@ -23,6 +22,7 @@ in
     version = gcc-unwrapped.version;
     meta = gcc-unwrapped.meta;
     nativeBuildInputs = [gnused];
+    passthru.unwrapped = gcc-unwrapped;
   }
   ''
     mkdir -p "$out/bin"
@@ -37,7 +37,7 @@ in
         -e 's,@libc@,${libc}/lib,' \
         -e 's,@gccinc@,${gcc-unwrapped}/lib/gcc/${targetPlatform.config}/${libgcc.version}/include,' \
         -e 's,@binutils@,${binutils}/bin,' \
-        -e 's,@extraflags@,${extraFlagsC},' \
+        -e 's,@extraflags@,${extraFlags},' \
         '${./wrapper.sh}' > "$out/bin/$(basename "$orig")"
         chmod +x "$out/bin/$(basename "$orig")"
     done

@@ -6,6 +6,7 @@
   bash,
   gcc,
   binutils,
+  findutils,
   gnumake,
   gnugrep,
   gnused,
@@ -31,6 +32,7 @@ in
     nativeBuildInputs = [
       gcc
       binutils
+      findutils
       gnumake
       gnused
       gnugrep
@@ -85,13 +87,12 @@ in
     EOF
 
     # Configure
-    export CC="gcc -B${libgcc}/lib/gcc/${hostPlatform.config}/${libgcc.version} -Wl,-rpath,${gcc}/lib,-rpath,${libgcc}/lib/gcc/${hostPlatform.config}/${libgcc.version}"
+    export CC="gcc -B${libgcc}/lib/gcc/${hostPlatform.config}/${libgcc.version} -Wl,-rpath,${libgcc}/lib/gcc/${hostPlatform.config}/${libgcc.version}"
     bash ./configure \
       --prefix=$out \
       --build=${buildPlatform.config} \
       --host=${hostPlatform.config} \
-      --syslibdir=$out/lib \
-      --enable-wrapper
+      --syslibdir=$out/lib
 
     # Build
     make -j $NIX_BUILD_CORES
@@ -100,8 +101,9 @@ in
 
     # Install
     make -j $NIX_BUILD_CORES install
-    sed -i 's|/bin/sh|${lib.getExe bash}|' $out/bin/*
+    mkdir -p $out/bin
     ln -s ../lib/libc.so $out/bin/ldd
     ln -s $(ls -d ${linux-headers}/include/* | grep -v scsi\$) $out/include/
     cp libssp_nonshared.a $out/lib/
+    find $out/{bin,lib} -type f -exec ${binutilsTargetPrefix}strip --strip-unneeded {} +
   ''

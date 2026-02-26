@@ -73,5 +73,5 @@ bash.runCommand "${pname}-${version}"
     make -j $NIX_BUILD_CORES bin_SCRIPTS=
 
     # Install
-    make -j $NIX_BUILD_CORES bin_SCRIPTS= install
+    make -j $NIX_BUILD_CORES bin_SCRIPTS= install-strip
   ''

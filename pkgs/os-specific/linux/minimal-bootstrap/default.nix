@@ -65,7 +65,6 @@ in
         (buildHostHostPackages)
         bash-static
         binutils-static
-        busybox-static
         bzip2-static
         coreutils-static
         diffutils-static
@@ -84,5 +83,49 @@ in
         xz-static
         ;
       bash = buildHostHostPackages.bash-static;
+      requisiteTest = let
+        runsOnHost = with buildHostHostPackages; [
+          bash-static
+          binutils-static
+          bzip2-static
+          coreutils-static
+          diffutils-static
+          findutils-static
+          gawk-static
+          gcc
+          gnugrep-static
+          gnumake-static
+          gnupatch-static
+          gnused-static
+          gnutar-static
+          gzip-static
+          patchelf-static
+          xz-static
+
+          mpfr
+          gmp
+          mpc
+          libc
+          libc-headers
+          libiberty
+          libstdcxx
+          libgcc
+          libgcc-static
+          linux-headers
+          gcc-unwrapped
+        ];
+      in
+        derivation {
+          name = "test-requisites";
+          system = hostPlatform.system;
+          builder = lib.getExe buildHostHostPackages.bash-static;
+          args = [
+            "-c"
+            ''
+              echo ${lib.concatMapStringsSep " " (drv: drv.outPath) runsOnHost} > $out
+            ''
+          ];
+          allowedRequisites = runsOnHost;
+        };
     }
   )

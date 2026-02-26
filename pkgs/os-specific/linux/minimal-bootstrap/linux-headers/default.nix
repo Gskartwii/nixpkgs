@@ -53,7 +53,7 @@ bash.runCommand "${pname}-${version}"
     cd linux-${version}
 
     # Build
-    make -j $NIX_BUILD_CORES CC=musl-gcc HOSTCC=gcc ARCH=${hostPlatform.linuxArch} headers
+    make -j $NIX_BUILD_CORES HOSTCC=gcc ARCH=${hostPlatform.linuxArch} headers
 
     # Install
     find usr/include -name '.*' -exec rm {} +

@@ -1,5 +1,4 @@
 {
-  debug ? false,
   enableShared,
   libc ? null,
   lib,
@@ -222,5 +221,8 @@ in
 
       if ! [ -e "$out/lib/gcc/${hostPlatform.config}/${common.version}/libgcc_eh.a" ]; then
         ln -s "$out/lib/gcc/${hostPlatform.config}/${common.version}/libgcc.a" "$out/lib/gcc/${hostPlatform.config}/${common.version}/libgcc_eh.a"
+      fi
+      if [ -e "$out/lib/gcc/${hostPlatform.config}/${common.version}/libgcc_s.so.1" ]; then
+        ${binutilsTargetPrefix}strip --strip-debug "$out/lib/gcc/${hostPlatform.config}/${common.version}/libgcc_s.so.1"
       fi
     '')

@@ -59,12 +59,6 @@ lib.makeScope
         gcc = buildBuildHostPackages.gcc;
       };
 
-      busybox-static = callPackage ./busybox/static.nix {
-        build-binutils = buildBuildBuildPackages.binutils;
-        build-gcc = buildBuildBuildPackages.gcc-latest;
-        gcc = buildBuildHostPackages.gcc;
-      };
-
       bzip2-static = callPackage ./bzip2/static.nix {
         gcc = buildBuildHostPackages.gcc;
       };
@@ -120,7 +114,6 @@ lib.makeScope
       libgcc-static = callPackage ./gcc/libgcc.nix {
         enableShared = false;
         libc = null;
-        debug = true;
         gmp = buildBuildBuildPackages.gmp;
         mpc = buildBuildBuildPackages.mpc;
         mpfr = buildBuildBuildPackages.mpfr;
@@ -152,6 +145,7 @@ lib.makeScope
       };
 
       gcc = callPackage ./gcc/wrapper.nix {
+        binutils = binutils-static;
         hostBash = bash-static;
         libc = libc;
       };
@@ -211,7 +205,6 @@ lib.makeScope
       test = bash.runCommand "minimal-bootstrap-test" {} ''
         echo ${bash-static.tests.get-version}
         echo ${binutils-static.tests.get-version}
-        echo ${busybox-static.tests.get-version}
         echo ${bzip2-static.tests.get-version}
         echo ${coreutils-static.tests.get-version}
         echo ${diffutils-static.tests.get-version}

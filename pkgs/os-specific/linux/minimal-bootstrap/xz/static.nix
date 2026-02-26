@@ -69,11 +69,12 @@ in
       --disable-silent-rules \
       --disable-nls \
       --disable-shared \
+      --disable-scripts \
       --disable-assembler
 
     # Build
     make -j $NIX_BUILD_CORES
 
     # Install
-    make -j $NIX_BUILD_CORES install
+    make -j $NIX_BUILD_CORES install-strip
   ''

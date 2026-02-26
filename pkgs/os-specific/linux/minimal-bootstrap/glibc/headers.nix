@@ -76,7 +76,6 @@ bash.runCommand "${pname}-${version}"
     # Install
     make -j $NIX_BUILD_CORES INSTALL_UNCOMPRESSED=yes install-headers install-bootstrap-headers=yes
     ln -s $(ls -d ${linux-headers}/include/* | grep -v scsi\$) $out/include/
-    find $out/{bin,sbin,lib,libexec} -type f -exec strip --strip-unneeded {} + || true
 
     # https://sources.debian.org/patches/glibc/2.43-1/any/local-bootstrap-headers.diff/
     touch $out/include/gnu/stubs.h
