@@ -9,11 +9,11 @@
   checkMeta,
 }:
 lib.makeScope
-# Prevent using top-level attrs to protect against introducing dependency on
-# non-bootstrap packages by mistake. Any top-level inputs must be explicitly
-# declared here.
-(
-  extra:
+  # Prevent using top-level attrs to protect against introducing dependency on
+  # non-bootstrap packages by mistake. Any top-level inputs must be explicitly
+  # declared here.
+  (
+    extra:
     lib.callPackageWith (
       {
         inherit
@@ -26,8 +26,7 @@ lib.makeScope
         hostPlatform = buildPlatform;
         targetPlatform = hostPlatform;
 
-        inherit
-          (buildBuildBuildPackages)
+        inherit (buildBuildBuildPackages)
           bash
           coreutils
           musl
@@ -51,10 +50,9 @@ lib.makeScope
       }
       // extra
     )
-)
-(
-  self:
-    with self; {
+  )
+  (
+    self: with self; {
       supportedSystems = [
         "i686-linux"
         "x86_64-linux"
@@ -80,11 +78,11 @@ lib.makeScope
         libstdcxx = buildHostHostPackages.libstdcxx;
       };
 
-      inherit (callPackage ./utils.nix {}) derivationWithMeta writeTextFile writeText;
-      test = bash.runCommand "minimal-bootstrap-test" {} ''
+      inherit (callPackage ./utils.nix { }) derivationWithMeta writeTextFile writeText;
+      test = bash.runCommand "minimal-bootstrap-test" { } ''
         echo ${binutils.tests.get-version}
         echo ${gcc.tests.hello-world}
         mkdir ''${out}
       '';
     }
-)
+  )

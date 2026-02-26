@@ -14,8 +14,9 @@
   findutils,
   gnutar,
   gzip,
-}: let
-  inherit (import ./common.nix {inherit lib;}) meta;
+}:
+let
+  inherit (import ./common.nix { inherit lib; }) meta;
   pname = "gawk-static";
   version = "5.3.2";
 
@@ -24,7 +25,7 @@
     hash = "sha256-hjmhqI+0EaG+AmY3OdA+kCptMTtcb+Ak0L/rM0GhmhE=";
   };
 in
-  bash.runCommand "${pname}-${version}"
+bash.runCommand "${pname}-${version}"
   {
     inherit pname version meta;
 
@@ -41,8 +42,9 @@ in
       gzip
     ];
 
-    passthru.tests.get-version = result:
-      bash.runCommand "${pname}-get-version-${version}" {} ''
+    passthru.tests.get-version =
+      result:
+      bash.runCommand "${pname}-get-version-${version}" { } ''
         ${result}/bin/awk --version
         mkdir $out
       '';

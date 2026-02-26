@@ -21,7 +21,8 @@
   bzip2,
   xz,
   libc,
-}: let
+}:
+let
   common = import ./common.nix {
     inherit
       lib
@@ -37,9 +38,11 @@
     url = "https://github.com/gcc-mirror/gcc/commit/e5d853bbe9b05d6a00d98ad236f01937303e40c4.diff";
     hash = "sha256-e5WC3jxE5C2kLY2e3ORXej7vQ1PDhiaCz8FfTXoFB6E=";
   };
-  binutilsTargetPrefix = lib.optionalString (buildPlatform.config != hostPlatform.config) "${hostPlatform.config}-";
+  binutilsTargetPrefix = lib.optionalString (
+    buildPlatform.config != hostPlatform.config
+  ) "${hostPlatform.config}-";
 in
-  bash.runCommand "${pname}-${common.version}"
+bash.runCommand "${pname}-${common.version}"
   {
     inherit pname;
     inherit (common) version meta;
@@ -98,8 +101,12 @@ in
     # Configure
     mkdir build; cd build
     export CFLAGS="-B${binutils}/bin -B${libc}/lib -B${libgcc}/lib/gcc/${hostPlatform.config}/${libgcc.version} -Wl,-dynamic-linker=${libc}/${libc.dynamicLinkerFile}"
-    export CXXFLAGS="-B${binutils}/bin -B${libc}/lib -B${libgcc}/lib/gcc/${hostPlatform.config}/${libgcc.version} -Wl,-dynamic-linker=${libc}/${libc.dynamicLinkerFile}${lib.optionalString (!libgcc.sharedAvailable) " -static-libgcc"}"
-    export LDFLAGS="-B${binutils}/bin -B${libc}/lib -B${libgcc}/lib/gcc/${hostPlatform.config}/${libgcc.version} -Wl,-dynamic-linker=${libc}/${libc.dynamicLinkerFile}${lib.optionalString (!libgcc.sharedAvailable) " -static-libgcc"}"
+    export CXXFLAGS="-B${binutils}/bin -B${libc}/lib -B${libgcc}/lib/gcc/${hostPlatform.config}/${libgcc.version} -Wl,-dynamic-linker=${libc}/${libc.dynamicLinkerFile}${
+      lib.optionalString (!libgcc.sharedAvailable) " -static-libgcc"
+    }"
+    export LDFLAGS="-B${binutils}/bin -B${libc}/lib -B${libgcc}/lib/gcc/${hostPlatform.config}/${libgcc.version} -Wl,-dynamic-linker=${libc}/${libc.dynamicLinkerFile}${
+      lib.optionalString (!libgcc.sharedAvailable) " -static-libgcc"
+    }"
     export AR="${binutilsTargetPrefix}ar"
     export LD="${binutilsTargetPrefix}ld"
     export NM="${binutilsTargetPrefix}nm"
@@ -117,7 +124,9 @@ in
       --disable-vtable-verify \
       --enable-libstdcxx-visibility \
       --with-default-libstdcxx-abi=new \
-      ${lib.optionalString (!libgcc.sharedAvailable) "--disable-shared"}${lib.optionalString debug " || cat config.log; exit 1"}
+      ${
+        lib.optionalString (!libgcc.sharedAvailable) "--disable-shared"
+      }${lib.optionalString debug " || cat config.log; exit 1"}
 
     # Build
     make -j $NIX_BUILD_CORES

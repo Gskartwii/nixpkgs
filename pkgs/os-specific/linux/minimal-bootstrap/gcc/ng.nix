@@ -28,7 +28,8 @@
   libbacktrace,
   libiberty,
   xz,
-}: let
+}:
+let
   pname = "gcc";
   common = import ./common.nix {
     inherit
@@ -40,44 +41,44 @@
       ;
   };
 
-  binutilsTargetPrefix = lib.optionalString (targetPlatform.config != hostPlatform.config) "${targetPlatform.config}-";
-  patches =
-    [
-      (fetchurl {
-        name = "for_each_path-functional-programming.patch";
-        url = "https://github.com/gcc-mirror/gcc/commit/f23bac62f46fc296a4d0526ef54824d406c3756c.diff";
-        hash = "sha256-J7SrypmVSbvYUzxWWvK2EwEbRsfGGLg4vNZuLEe6Xe0=";
-      })
-      (fetchurl {
-        name = "find_a_program-separate-from-find_a_file.patch";
-        url = "https://inbox.sourceware.org/gcc-patches/20250822234120.1988059-1-git@JohnEricson.me/raw";
-        hash = "sha256-0gaWaeFZq+a8q7Bcr3eILNjHh1LfzL/Lz4F+W+H6XIU=";
-      })
-      (fetchurl {
-        name = "simplify-find_a_program-and-find_a_file.patch";
-        url = "https://inbox.sourceware.org/gcc-patches/20250822234120.1988059-2-git@JohnEricson.me/raw";
-        hash = "sha256-ojdyszxLGL+njHK4eAaeBkxAhFTDI57j6lGuAf0A+N0=";
-      })
-      (fetchurl {
-        name = "for_each_path-pass-machine-specific.patch";
-        url = "https://inbox.sourceware.org/gcc-patches/20250822234120.1988059-3-git@JohnEricson.me/raw";
-        hash = "sha256-C5jUSyNchmZcE8RTXc2dHfCqNKuBHeiouLruK9UooSM=";
-      })
-      (fetchurl {
-        name = "find_a_program-search-with-machine-prefix.patch";
-        url = "https://inbox.sourceware.org/gcc-patches/20250822234120.1988059-4-git@JohnEricson.me/raw";
-        hash = "sha256-MwcO4OXPlcdaSYivsh5ru+Cfq6qybeAtgCgTEPGYg40=";
-      })
-      ../../../../development/compilers/gcc/ng/15/gcc/fix-collect2-paths.diff
-    ]
-    ++ lib.optional targetPlatform.isMusl
+  binutilsTargetPrefix = lib.optionalString (
+    targetPlatform.config != hostPlatform.config
+  ) "${targetPlatform.config}-";
+  patches = [
     (fetchurl {
-      name = "libssp-nonshared.patch";
-      url = "https://gitlab.alpinelinux.org/alpine/aports/-/raw/cd7cc21cfae56585beb41ed96844d44b60020c13/main/gcc/0018-Alpine-musl-package-provides-libssp_nonshared.a.-We-.patch";
-      hash = "sha256-VwGXVDQlv140jyMXmVaoJWLDpwHF56vII9aPYI1ooHg=";
-    });
+      name = "for_each_path-functional-programming.patch";
+      url = "https://github.com/gcc-mirror/gcc/commit/f23bac62f46fc296a4d0526ef54824d406c3756c.diff";
+      hash = "sha256-J7SrypmVSbvYUzxWWvK2EwEbRsfGGLg4vNZuLEe6Xe0=";
+    })
+    (fetchurl {
+      name = "find_a_program-separate-from-find_a_file.patch";
+      url = "https://inbox.sourceware.org/gcc-patches/20250822234120.1988059-1-git@JohnEricson.me/raw";
+      hash = "sha256-0gaWaeFZq+a8q7Bcr3eILNjHh1LfzL/Lz4F+W+H6XIU=";
+    })
+    (fetchurl {
+      name = "simplify-find_a_program-and-find_a_file.patch";
+      url = "https://inbox.sourceware.org/gcc-patches/20250822234120.1988059-2-git@JohnEricson.me/raw";
+      hash = "sha256-ojdyszxLGL+njHK4eAaeBkxAhFTDI57j6lGuAf0A+N0=";
+    })
+    (fetchurl {
+      name = "for_each_path-pass-machine-specific.patch";
+      url = "https://inbox.sourceware.org/gcc-patches/20250822234120.1988059-3-git@JohnEricson.me/raw";
+      hash = "sha256-C5jUSyNchmZcE8RTXc2dHfCqNKuBHeiouLruK9UooSM=";
+    })
+    (fetchurl {
+      name = "find_a_program-search-with-machine-prefix.patch";
+      url = "https://inbox.sourceware.org/gcc-patches/20250822234120.1988059-4-git@JohnEricson.me/raw";
+      hash = "sha256-MwcO4OXPlcdaSYivsh5ru+Cfq6qybeAtgCgTEPGYg40=";
+    })
+    ../../../../development/compilers/gcc/ng/15/gcc/fix-collect2-paths.diff
+  ]
+  ++ lib.optional targetPlatform.isMusl (fetchurl {
+    name = "libssp-nonshared.patch";
+    url = "https://gitlab.alpinelinux.org/alpine/aports/-/raw/cd7cc21cfae56585beb41ed96844d44b60020c13/main/gcc/0018-Alpine-musl-package-provides-libssp_nonshared.a.-We-.patch";
+    hash = "sha256-VwGXVDQlv140jyMXmVaoJWLDpwHF56vII9aPYI1ooHg=";
+  });
 in
-  bash.runCommand "${pname}-${common.version}"
+bash.runCommand "${pname}-${common.version}"
   {
     inherit (common) version meta;
     inherit pname;
@@ -100,7 +101,8 @@ in
       xz
     ];
   }
-  (''
+  (
+    ''
       # Unpack
       cp -R ${common.monorepoSrc} ./src
       chmod -R +w src
@@ -112,12 +114,12 @@ in
       sed -i 's@basename(@lbasename(@' gcc/collect2.cc
       sed -i 's@noconfigdirs=""@noconfigdirs="$noconfigdirs $target_libraries"@' configure
     ''
-    + lib.optionalString (targetPlatform.config == hostPlatform.config && targetPlatform != hostPlatform)
-    ''
-      sed -i 's@is_cross_compiler=no@is_cross_compiler=yes@' configure
-    ''
-    + lib.optionalString (buildPlatform.config != hostPlatform.config)
-    ''
+    +
+      lib.optionalString (targetPlatform.config == hostPlatform.config && targetPlatform != hostPlatform)
+        ''
+          sed -i 's@is_cross_compiler=no@is_cross_compiler=yes@' configure
+        ''
+    + lib.optionalString (buildPlatform.config != hostPlatform.config) ''
       # We must have host=target, so these are build->target tools.
       # We need to allow the configure script to inspect the binutils to correctly determine
       # support for e.g. ".hidden"
@@ -198,4 +200,5 @@ in
       # Prevent references to build-time dependencies
       rm -rf $out/libexec/gcc/*/*/install-tools
       rm -rf $out/lib/gcc/*/*/install-tools
-    '')
+    ''
+  )

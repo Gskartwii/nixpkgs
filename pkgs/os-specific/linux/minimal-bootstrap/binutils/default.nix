@@ -18,9 +18,10 @@
   gcc ? null,
   binutils ? null,
   musl ? null,
-}: let
+}:
+let
   # Based on https://github.com/ZilchOS/bootstrap-from-tcc/blob/2e0c68c36b3437386f786d619bc9a16177f2e149/using-nix/2a1-static-binutils.nix
-  inherit (import ./common.nix {inherit lib;}) meta;
+  inherit (import ./common.nix { inherit lib; }) meta;
   pname = "binutils";
   version = "2.46.0";
 
@@ -35,67 +36,69 @@
   ];
 
   enableShared = !hostPlatform.isStatic;
-  targetPrefix = lib.optionalString (targetPlatform.config != hostPlatform.config) "${targetPlatform.config}-";
+  targetPrefix = lib.optionalString (
+    targetPlatform.config != hostPlatform.config
+  ) "${targetPlatform.config}-";
 
-  configureFlags =
-    [
-      "--prefix=${placeholder "out"}"
-      "--build=${buildPlatform.config}"
-      "--host=${hostPlatform.config}"
-      "--target=${targetPlatform.config}"
-      "--program-prefix=${targetPrefix}"
-      "--with-sysroot=/"
-      "--disable-dependency-tracking"
-      "--enable-deterministic-archives"
-      # depends on bison
-      "--disable-gprofng"
+  configureFlags = [
+    "--prefix=${placeholder "out"}"
+    "--build=${buildPlatform.config}"
+    "--host=${hostPlatform.config}"
+    "--target=${targetPlatform.config}"
+    "--program-prefix=${targetPrefix}"
+    "--with-sysroot=/"
+    "--disable-dependency-tracking"
+    "--enable-deterministic-archives"
+    # depends on bison
+    "--disable-gprofng"
 
-      # Turn on --enable-new-dtags by default to make the linker set
-      # RUNPATH instead of RPATH on binaries.  This is important because
-      # RUNPATH can be overridden using LD_LIBRARY_PATH at runtime.
-      "--enable-new-dtags"
+    # Turn on --enable-new-dtags by default to make the linker set
+    # RUNPATH instead of RPATH on binaries.  This is important because
+    # RUNPATH can be overridden using LD_LIBRARY_PATH at runtime.
+    "--enable-new-dtags"
 
-      # By default binutils searches $libdir for libraries. This brings in
-      # libbfd and libopcodes into a default visibility. Drop default lib
-      # path to force users to declare their use of these libraries.
-      "--with-lib-path=:"
-    ]
-    ++ (
-      if enableShared
-      then ["--enable-shared" "--disable-static"]
-      else ["--disable-shared" "--enable-static"]
-    );
+    # By default binutils searches $libdir for libraries. This brings in
+    # libbfd and libopcodes into a default visibility. Drop default lib
+    # path to force users to declare their use of these libraries.
+    "--with-lib-path=:"
+  ]
+  ++ (
+    if enableShared then
+      [
+        "--enable-shared"
+        "--disable-static"
+      ]
+    else
+      [
+        "--disable-shared"
+        "--enable-static"
+      ]
+  );
 
-  cc =
-    if gcc != null
-    then "gcc"
-    else "${lib.getExe' tinycc.compiler "tcc"} -B ${tinycc.libs}/lib";
-  ar =
-    if binutils != null
-    then "ar"
-    else "${lib.getExe' tinycc.compiler "tcc"} -ar";
+  cc = if gcc != null then "gcc" else "${lib.getExe' tinycc.compiler "tcc"} -B ${tinycc.libs}/lib";
+  ar = if binutils != null then "ar" else "${lib.getExe' tinycc.compiler "tcc"} -ar";
 in
-  bash.runCommand "${pname}-${version}"
+bash.runCommand "${pname}-${version}"
   {
     inherit pname version meta;
 
-    nativeBuildInputs =
-      [
-        gnumake
-        gnupatch
-        gnused
-        gnugrep
-        gawk
-        diffutils
-        gnutar
-        xz
-      ]
-      ++ lib.optional (tinycc != null) tinycc.compiler
-      ++ lib.optional (gcc != null) gcc
-      ++ lib.optional (binutils != null) binutils;
+    nativeBuildInputs = [
+      gnumake
+      gnupatch
+      gnused
+      gnugrep
+      gawk
+      diffutils
+      gnutar
+      xz
+    ]
+    ++ lib.optional (tinycc != null) tinycc.compiler
+    ++ lib.optional (gcc != null) gcc
+    ++ lib.optional (binutils != null) binutils;
 
-    passthru.tests.get-version = result:
-      bash.runCommand "${pname}-get-version-${version}" {} ''
+    passthru.tests.get-version =
+      result:
+      bash.runCommand "${pname}-get-version-${version}" { } ''
         ${result}/bin/ld --version
         mkdir $out
       '';

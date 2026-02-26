@@ -17,7 +17,8 @@
   gzip,
   bzip2,
   xz,
-}: let
+}:
+let
   common = import ./common.nix {
     inherit
       lib
@@ -28,8 +29,12 @@
       ;
   };
   pname = "libiberty";
+
+  binutilsTargetPrefix = lib.optionalString (
+    hostPlatform.config != buildPlatform.config
+  ) "${hostPlatform.config}-";
 in
-  bash.runCommand "${pname}-${common.version}"
+bash.runCommand "${pname}-${common.version}"
   {
     inherit pname;
     inherit (common) version meta;
@@ -89,4 +94,5 @@ in
       rm -rf "$out/lib64"
       ln -s lib "$out/lib64"
     fi
+    find $out/lib -type f -exec ${binutilsTargetPrefix}strip --strip-debug {} + || true
   ''

@@ -12,7 +12,8 @@
   gawk,
   gnutar,
   gzip,
-}: let
+}:
+let
   pname = "xz";
   version = "5.8.2";
 
@@ -21,7 +22,7 @@
     hash = "sha256-zgnFCllieGuD5do4nJDdLBXs0JgKJY3QH3D5585YqPE=";
   };
 in
-  bash.runCommand "${pname}-${version}"
+bash.runCommand "${pname}-${version}"
   {
     inherit pname version;
 
@@ -36,8 +37,9 @@ in
       gzip
     ];
 
-    passthru.tests.get-version = result:
-      bash.runCommand "${pname}-get-version-${version}" {} ''
+    passthru.tests.get-version =
+      result:
+      bash.runCommand "${pname}-get-version-${version}" { } ''
         ${lib.getExe result} --version
         mkdir $out
       '';
@@ -49,7 +51,7 @@ in
         gpl2Plus
         lgpl21Plus
       ];
-      teams = [lib.teams.minimal-bootstrap];
+      teams = [ lib.teams.minimal-bootstrap ];
       platforms = lib.platforms.unix;
       mainProgram = "xz";
     };

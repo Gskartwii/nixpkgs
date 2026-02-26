@@ -6,6 +6,7 @@
   bash,
   gcc,
   binutils,
+  findutils,
   gnumake,
   gnutar,
   gzip,
@@ -19,7 +20,9 @@ let
     sha256 = "0s92986cv0p692icqlw1j42y9nld8zd83qwhzbqd61p1dqbh6nmb";
   };
 
-  binutilsTargetPrefix = lib.optionalString (hostPlatform.config != buildPlatform.config) "${hostPlatform.config}-";
+  binutilsTargetPrefix = lib.optionalString (
+    hostPlatform.config != buildPlatform.config
+  ) "${hostPlatform.config}-";
 in
 bash.runCommand "${pname}-${version}"
   {
@@ -28,6 +31,7 @@ bash.runCommand "${pname}-${version}"
     nativeBuildInputs = [
       gcc
       binutils
+      findutils
       gnumake
       gnutar
       gzip
@@ -63,4 +67,5 @@ bash.runCommand "${pname}-${version}"
 
     # Install
     make install -j $NIX_BUILD_CORES PREFIX=$out
+    find $out/{bin,lib} -type f -exec ${binutilsTargetPrefix}strip --strip-debug {} + || true
   ''

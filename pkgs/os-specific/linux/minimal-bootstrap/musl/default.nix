@@ -12,8 +12,9 @@
   gnused,
   gnutar,
   gzip,
-}: let
-  inherit (import ./common.nix {inherit lib;}) pname meta;
+}:
+let
+  inherit (import ./common.nix { inherit lib; }) pname meta;
   version = "1.2.5";
 
   src = fetchurl {
@@ -21,7 +22,7 @@
     hash = "sha256-qaEYu+hNh2TaDqDSizqz+uhHf8fkCF2QECuFlvx8deQ=";
   };
 in
-  bash.runCommand "${pname}-${version}"
+bash.runCommand "${pname}-${version}"
   {
     inherit pname version meta;
 
@@ -37,27 +38,28 @@ in
 
     passthru = {
       dynamicLinkerFile = "lib/libc.so";
-      tests.hello-world = result:
+      tests.hello-world =
+        result:
         bash.runCommand "${pname}-simple-program-${version}"
-        {
-          nativeBuildInputs = [
-            gcc
-            binutils
-            result
-          ];
-        }
-        ''
-          cat <<EOF >> test.c
-          #include <stdio.h>
-          int main() {
-            printf("Hello World!\n");
-            return 0;
+          {
+            nativeBuildInputs = [
+              gcc
+              binutils
+              result
+            ];
           }
-          EOF
-          musl-gcc -o test test.c
-          ./test
-          mkdir $out
-        '';
+          ''
+            cat <<EOF >> test.c
+            #include <stdio.h>
+            int main() {
+              printf("Hello World!\n");
+              return 0;
+            }
+            EOF
+            musl-gcc -o test test.c
+            ./test
+            mkdir $out
+          '';
     };
   }
   ''

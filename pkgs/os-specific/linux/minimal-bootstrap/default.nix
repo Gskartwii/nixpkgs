@@ -6,7 +6,8 @@
   fetchurl,
   checkMetaBuild,
   checkMetaHost,
-}: let
+}:
+let
   buildBuildBuildPackages = import ./buildbuildbuild.nix {
     inherit
       lib
@@ -41,49 +42,48 @@
     checkMeta = checkMetaHost;
   };
 in
-  lib.makeScope
+lib.makeScope
   # Prevent using top-level attrs to protect against introducing dependency on
   # non-bootstrap packages by mistake. Any top-level inputs must be explicitly
   # declared here.
   (
     extra:
-      lib.callPackageWith (
-        {
-          inherit
-            lib
-            config
-            fetchurl
-            ;
-        }
-        // extra
-      )
+    lib.callPackageWith (
+      {
+        inherit
+          lib
+          config
+          fetchurl
+          ;
+      }
+      // extra
+    )
   )
-  (
-    self: {
-      inherit buildBuildBuildPackages buildBuildHostPackages buildHostHostPackages;
-      inherit
-        (buildHostHostPackages)
-        bash-static
-        binutils-static
-        bzip2-static
-        coreutils-static
-        diffutils-static
-        findutils-static
-        gawk-static
-        gcc
-        gnugrep-static
-        gnumake-static
-        gnupatch-static
-        gnused-static
-        gnutar-static
-        gzip-static
-        libc
-        linux-headers
-        patchelf-static
-        xz-static
-        ;
-      bash = buildHostHostPackages.bash-static;
-      requisiteTest = let
+  (self: {
+    inherit buildBuildBuildPackages buildBuildHostPackages buildHostHostPackages;
+    inherit (buildHostHostPackages)
+      bash-static
+      binutils-static
+      bzip2-static
+      coreutils-static
+      diffutils-static
+      findutils-static
+      gawk-static
+      gcc
+      gnugrep-static
+      gnumake-static
+      gnupatch-static
+      gnused-static
+      gnutar-static
+      gzip-static
+      libc
+      linux-headers
+      patchelf-static
+      xz-static
+      ;
+    bash = buildHostHostPackages.bash-static;
+    requisiteTest =
+      let
         runsOnHost = with buildHostHostPackages; [
           bash-static
           binutils-static
@@ -115,17 +115,11 @@ in
           gcc-unwrapped
         ];
       in
-        derivation {
-          name = "test-requisites";
-          system = hostPlatform.system;
-          builder = lib.getExe buildHostHostPackages.bash-static;
-          args = [
-            "-c"
-            ''
-              echo ${lib.concatMapStringsSep " " (drv: drv.outPath) runsOnHost} > $out
-            ''
-          ];
+      buildBuildBuildPackages.bash.runCommand "test-requisites"
+        {
           allowedRequisites = runsOnHost;
-        };
-    }
-  )
+        }
+        ''
+          echo ${lib.concatMapStringsSep " " (drv: drv.outPath) runsOnHost} > $out
+        '';
+  })

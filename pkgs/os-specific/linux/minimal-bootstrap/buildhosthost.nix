@@ -9,11 +9,11 @@
   checkMeta,
 }:
 lib.makeScope
-# Prevent using top-level attrs to protect against introducing dependency on
-# non-bootstrap packages by mistake. Any top-level inputs must be explicitly
-# declared here.
-(
-  extra:
+  # Prevent using top-level attrs to protect against introducing dependency on
+  # non-bootstrap packages by mistake. Any top-level inputs must be explicitly
+  # declared here.
+  (
+    extra:
     lib.callPackageWith (
       {
         inherit
@@ -25,8 +25,7 @@ lib.makeScope
         buildPlatform = buildPlatform;
         hostPlatform = hostPlatform;
         targetPlatform = hostPlatform;
-        inherit
-          (buildBuildBuildPackages)
+        inherit (buildBuildBuildPackages)
           bash
           coreutils
           gnupatch
@@ -45,10 +44,9 @@ lib.makeScope
       }
       // extra
     )
-)
-(
-  self:
-    with self; {
+  )
+  (
+    self: with self; {
       bash-static = callPackage ./bash/static.nix {
         gcc-build = buildBuildBuildPackages.gcc-latest;
         gcc = buildBuildHostPackages.gcc;
@@ -80,8 +78,7 @@ lib.makeScope
       };
 
       libc =
-        if hostPlatform.isMusl
-        then
+        if hostPlatform.isMusl then
           callPackage ./musl/static.nix {
             gcc = buildBuildHostPackages.gcc-unwrapped;
             libgcc = libgcc-static;
@@ -176,8 +173,7 @@ lib.makeScope
       };
 
       libc-headers =
-        if hostPlatform.isMusl
-        then
+        if hostPlatform.isMusl then
           callPackage ./musl/headers.nix {
             gcc = buildBuildBuildPackages.gcc-latest;
           }
@@ -201,8 +197,8 @@ lib.makeScope
         gcc = buildBuildHostPackages.gcc;
       };
 
-      inherit (callPackage ./utils.nix {}) derivationWithMeta writeTextFile writeText;
-      test = bash.runCommand "minimal-bootstrap-test" {} ''
+      inherit (callPackage ./utils.nix { }) derivationWithMeta writeTextFile writeText;
+      test = bash.runCommand "minimal-bootstrap-test" { } ''
         echo ${bash-static.tests.get-version}
         echo ${binutils-static.tests.get-version}
         echo ${bzip2-static.tests.get-version}
@@ -220,4 +216,4 @@ lib.makeScope
         mkdir ''${out}
       '';
     }
-)
+  )

@@ -11,8 +11,9 @@
   gnused,
   gnutar,
   gzip,
-}: let
-  inherit (import ./common.nix {inherit lib;}) pname meta;
+}:
+let
+  inherit (import ./common.nix { inherit lib; }) pname meta;
   version = "1.2.5";
 
   src = fetchurl {
@@ -20,7 +21,7 @@
     hash = "sha256-qaEYu+hNh2TaDqDSizqz+uhHf8fkCF2QECuFlvx8deQ=";
   };
 in
-  bash.runCommand "${pname}-${version}"
+bash.runCommand "${pname}-${version}"
   {
     inherit pname version meta;
 
@@ -55,4 +56,3 @@ in
     # Install
     make -j $NIX_BUILD_CORES install-headers
   ''
-

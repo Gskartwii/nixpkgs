@@ -12,16 +12,17 @@
   gcc-unwrapped,
   binutils,
   bash,
-}: let
+}:
+let
   pname = "gcc-wrapper";
   extraFlags = (lib.optionalString (!libgcc.sharedAvailable) "-static-libgcc ");
 in
-  bash.runCommand "${pname}-${gcc-unwrapped.version}"
+bash.runCommand "${pname}-${gcc-unwrapped.version}"
   {
     inherit pname;
     version = gcc-unwrapped.version;
     meta = gcc-unwrapped.meta;
-    nativeBuildInputs = [gnused];
+    nativeBuildInputs = [ gnused ];
     passthru.unwrapped = gcc-unwrapped;
   }
   ''

@@ -17,7 +17,8 @@
   gzip,
   bzip2,
   xz,
-}: let
+}:
+let
   common = import ./common.nix {
     inherit
       lib
@@ -29,7 +30,7 @@
   };
   pname = "libbacktrace";
 in
-  bash.runCommand "${pname}-${common.version}"
+bash.runCommand "${pname}-${common.version}"
   {
     inherit (common) meta version;
     inherit pname;

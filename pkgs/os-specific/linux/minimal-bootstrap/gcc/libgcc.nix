@@ -25,7 +25,8 @@
   xz,
   libiberty,
   binutils-cross,
-}: let
+}:
+let
   common = import ./common.nix {
     inherit
       lib
@@ -62,9 +63,11 @@
     ../../../../development/compilers/gcc/ng/15/libgcc/force-regular-dirs.patch
   ];
 
-  binutilsTargetPrefix = lib.optionalString (buildPlatform.config != hostPlatform.config) "${hostPlatform.config}-";
+  binutilsTargetPrefix = lib.optionalString (
+    buildPlatform.config != hostPlatform.config
+  ) "${hostPlatform.config}-";
 in
-  bash.runCommand "${pname}-${common.version}"
+bash.runCommand "${pname}-${common.version}"
   {
     inherit pname;
     inherit (common) version meta;
@@ -88,7 +91,8 @@ in
       xz
     ];
   }
-  (''
+  (
+    ''
       # Unpack
       cp -R ${common.monorepoSrc} ./src
       chmod -R +w src
@@ -195,10 +199,8 @@ in
        --host=${hostPlatform.config} \
         gcc_cv_target_thread_file=single \
         ${
-        if enableShared
-        then "--enable-shared --disable-static"
-        else "--disable-shared --enable-static"
-      } \
+          if enableShared then "--enable-shared --disable-static" else "--disable-shared --enable-static"
+        } \
         cross_compiling=true
 
       export CFLAGS=""
@@ -222,7 +224,6 @@ in
       if ! [ -e "$out/lib/gcc/${hostPlatform.config}/${common.version}/libgcc_eh.a" ]; then
         ln -s "$out/lib/gcc/${hostPlatform.config}/${common.version}/libgcc.a" "$out/lib/gcc/${hostPlatform.config}/${common.version}/libgcc_eh.a"
       fi
-      if [ -e "$out/lib/gcc/${hostPlatform.config}/${common.version}/libgcc_s.so.1" ]; then
-        ${binutilsTargetPrefix}strip --strip-debug "$out/lib/gcc/${hostPlatform.config}/${common.version}/libgcc_s.so.1"
-      fi
-    '')
+      find "$out/lib/gcc/${hostPlatform.config}/${common.version}/" -type f -exec ${binutilsTargetPrefix}strip --strip-debug {} + || true
+    ''
+  )

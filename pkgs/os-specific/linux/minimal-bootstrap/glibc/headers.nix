@@ -80,4 +80,3 @@ bash.runCommand "${pname}-${version}"
     # https://sources.debian.org/patches/glibc/2.43-1/any/local-bootstrap-headers.diff/
     touch $out/include/gnu/stubs.h
   ''
-
