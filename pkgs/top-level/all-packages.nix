@@ -1393,7 +1393,7 @@ with pkgs;
         crossSystem = if stdenv.buildPlatform == stdenv.hostPlatform then null else stdenv.hostPlatform;
       }
     else if stdenv.hostPlatform.isLinux then
-      callPackage ../stdenv/linux/make-bootstrap-tools.nix { }
+      throw "freshBootstrapTools: no longer supported on ${stdenv.hostPlatform.config}"
     else if stdenv.hostPlatform.isFreeBSD then
       callPackage ../stdenv/freebsd/make-bootstrap-tools.nix { }
     else
@@ -8802,7 +8802,9 @@ with pkgs;
         inherit (stdenv.buildPlatform) system;
         inherit (config) rewriteURL;
       };
-      checkMetaBuild = callPackage ../stdenv/generic/check-meta.nix { hostPlatform = stdenv.buildPlatform; };
+      checkMetaBuild = callPackage ../stdenv/generic/check-meta.nix {
+        hostPlatform = stdenv.buildPlatform;
+      };
       checkMetaHost = callPackage ../stdenv/generic/check-meta.nix { inherit (stdenv) hostPlatform; };
     }
   );

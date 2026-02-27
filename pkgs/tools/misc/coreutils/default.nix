@@ -53,7 +53,10 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-FlNamt8LEANzZOLWEqrT2fTso6NElJztdNEvr0vVHSU=";
   };
 
-  patches = [ ./fix-kill-doctest.patch ];
+  patches = [
+    ./fix-kill-doctest.patch
+    ./fix-hangup.patch
+  ];
 
   postPatch = ''
     # The test tends to fail on btrfs, f2fs and maybe other unusual filesystems.

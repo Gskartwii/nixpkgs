@@ -47,6 +47,9 @@ stdenv.mkDerivation (finalAttrs: {
     "ZLESS_MAN=zless.1"
     "ZLESS_PROG=zless"
   ];
+  env.CFLAGS = lib.optionalString (
+    stdenv.hostPlatform.isMusl && stdenv.hostPlatform.isx86_32
+  ) "-no-pie";
 
   nativeCheckInputs = [
     less

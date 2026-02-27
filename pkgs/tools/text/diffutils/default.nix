@@ -75,6 +75,12 @@ stdenv.mkDerivation rec {
       "gl_cv_func_strcasecmp_works=yes"
     ];
 
+  # Configure script depends on receiving --host to detect musl.
+  configurePlatforms = [
+    "build"
+    "host"
+  ];
+
   # Test failure on QEMU only (#300550)
   doCheck = !stdenv.buildPlatform.isRiscV64;
 
