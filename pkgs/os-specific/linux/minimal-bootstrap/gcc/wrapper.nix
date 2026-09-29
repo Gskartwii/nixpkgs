@@ -14,11 +14,9 @@
   binutils,
   bash,
   dynamicLinkerGlob,
-  staticLibgcc,
 }:
 let
   pname = "gcc-wrapper";
-  extraFlags = lib.optionalString staticLibgcc "-static-libgcc ";
 in
 bash-build.runCommand "${pname}-${gcc-unwrapped.version}"
   {
@@ -77,7 +75,6 @@ bash-build.runCommand "${pname}-${gcc-unwrapped.version}"
         -e 's,@libc@,${libc}/lib,' \
         -e 's,@gccinc@,${gcc-unwrapped}/lib/gcc/${targetPlatform.config}/${libgcc.version}/include,' \
         -e 's,@binutils@,${binutils}/bin,' \
-        -e 's,@extraflags@,${extraFlags},' \
         '${./wrapper.sh}' > "$out/bin/$(basename "$orig")"
         chmod +x "$out/bin/$(basename "$orig")"
     done
@@ -95,7 +92,6 @@ bash-build.runCommand "${pname}-${gcc-unwrapped.version}"
         -e 's,@libstdcxxarchinc@,${libstdcxx}/include/c++/${libstdcxx.version}/${targetPlatform.config},' \
         -e 's,@gccinc@,${gcc-unwrapped}/lib/gcc/${targetPlatform.config}/${libgcc.version}/include,' \
         -e 's,@binutils@,${binutils}/bin,' \
-        -e 's,@extraflags@,${extraFlags},' \
         '${./wrappercxx.sh}' > "$out/bin/$(basename "$orig")"
         chmod +x "$out/bin/$(basename "$orig")"
     done

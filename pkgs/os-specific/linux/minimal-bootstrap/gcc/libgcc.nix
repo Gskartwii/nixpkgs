@@ -157,14 +157,12 @@ bash.runCommand "${pname}-${common.version}"
      --prefix="$out" \
      --build=${buildPlatform.config} \
      --host=${hostPlatform.config} \
+     ${lib.optionalString (libc == null) "--disable-shared"} \
       gcc_cv_target_thread_file=single \
-      ${
-        if enableShared then "--enable-shared --disable-static" else "--disable-shared --enable-static"
-      } \
       cross_compiling=true
 
     export CFLAGS="-O0"
-    export LDFLAGS="${lib.optionalString (libc != null) "-B${libc}/lib"}"
+    export LDFLAGS="${lib.optionalString (libc != null) "-B${libc}/lib -Wl,-rpath=${libc}/lib"}"
     make -j $NIX_BUILD_CORES MULTIBUILDTOP:=../
 
     make -j $NIX_BUILD_CORES install-strip MULTIBUILDTOP:=../

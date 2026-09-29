@@ -36,11 +36,16 @@ for param in "$@"; do
   prev="$param"
 done
 
+libgccRpath=""
+if [ -e @libgcc@/libgcc_s.so.1 ]; then
+  libgccRpath="-Wl,-rpath,@libgcc@"
+fi
+
 # Order of -B is very particular. musl detection in gnulib requires that
 # libc/.. comes before libgcc, otherwise libc is assumed to be glibc.
 exec -a "@origname@" @gcc@ -Wl,-dynamic-linker=@dynlinker@ \
-  @extraflags@ \
   $extraRpath \
+  $libgccRpath \
   -Wl,-rpath,@libc@ \
   -B@libc@/.. \
   -B@libgcc@ \

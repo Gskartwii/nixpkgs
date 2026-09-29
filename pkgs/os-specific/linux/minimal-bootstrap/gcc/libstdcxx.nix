@@ -21,7 +21,6 @@
   xz,
   libc,
   dynamicLinkerGlob,
-  staticLibgcc,
 }:
 let
   common = import ./common.nix {
@@ -110,8 +109,8 @@ bash.runCommand "${pname}-${common.version}"
 
     mkdir build; cd build
     export CFLAGS="-O0 -B${binutils}/bin -B${libc}/lib -B${libgcc}/lib/gcc/${hostPlatform.config}/${libgcc.version} -Wl,-dynamic-linker=$dynamicLinker"
-    export CXXFLAGS="-O0 -B${binutils}/bin -B${libc}/lib -B${libgcc}/lib/gcc/${hostPlatform.config}/${libgcc.version}${lib.optionalString staticLibgcc " -static-libgcc"} -Wl,-dynamic-linker=$dynamicLinker"
-    export LDFLAGS="-B${binutils}/bin -B${libc}/lib -B${libgcc}/lib/gcc/${hostPlatform.config}/${libgcc.version}${lib.optionalString staticLibgcc " -static-libgcc"} -Wl,-dynamic-linker=$dynamicLinker"
+    export CXXFLAGS="-O0 -B${binutils}/bin -B${libc}/lib -B${libgcc}/lib/gcc/${hostPlatform.config}/${libgcc.version} -Wl,-dynamic-linker=$dynamicLinker"
+    export LDFLAGS="-B${binutils}/bin -B${libc}/lib -B${libgcc}/lib/gcc/${hostPlatform.config}/${libgcc.version} -Wl,-dynamic-linker=$dynamicLinker"
     export AR="${binutilsTargetPrefix}ar"
     export LD="${binutilsTargetPrefix}ld"
     export NM="${binutilsTargetPrefix}nm"
@@ -130,7 +129,7 @@ bash.runCommand "${pname}-${common.version}"
       --disable-vtable-verify \
       --enable-libstdcxx-visibility \
       --with-default-libstdcxx-abi=new \
-      ${lib.optionalString staticLibgcc "--disable-shared"}
+      --disable-shared
 
     # Build
     make -j $NIX_BUILD_CORES

@@ -37,6 +37,10 @@ for param in "$@"; do
 done
 
 # Don't keep build compiler by unnecessary RPATH for static-only case.
+libgccRpath=""
+if [ -e @libgcc@/libgcc_s.so.1 ]; then
+  libgccRpath="-Wl,-rpath,@libgcc@"
+fi
 libstdcxxRpath=""
 if [ -e @libstdcxx@/libstdc++.so ]; then
   libstdcxxRpath="-Wl,-rpath,@libstdcxx@"
@@ -47,9 +51,9 @@ fi
 # Also, libstdcxxinc uses #include_next directives that depend on
 # libc headers, so libstdcxx must come before libc.
 exec -a "@origname@" @gcc@ -Wl,-dynamic-linker=@dynlinker@ \
-  @extraflags@ \
   $extraRpath \
   -Wl,-rpath,@libc@ \
+  $libgccRpath \
   $libstdcxxRpath \
   -I @libstdcxxarchinc@ \
   -I @libstdcxxinc@ \

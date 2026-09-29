@@ -163,7 +163,6 @@ lib.makeScope
           libstdcxx = gcc10-unwrapped;
           targetPlatform = hostPlatform;
           dynamicLinkerGlob = "${musl}/lib/libc.so";
-          staticLibgcc = true;
         };
 
         gcc-latest-unwrapped = callPackage ./gcc/ng.nix {
@@ -182,9 +181,8 @@ lib.makeScope
           bash-build = bash;
           gcc-unwrapped = gcc-latest-unwrapped;
           targetPlatform = hostPlatform;
-          libc = musl;
-          dynamicLinkerGlob = "${musl}/lib/libc.so";
-          staticLibgcc = true;
+          libc = musl-static;
+          dynamicLinkerGlob = "${musl-static}/lib/libc.so";
         };
 
         gnugrep = callPackage ./gnugrep {
@@ -329,7 +327,18 @@ lib.makeScope
           gnumake = gnumake-musl;
           gnutar = gnutar-latest;
           enableShared = false;
-          libc = musl;
+          libc = musl-static;
+          libc-headers = musl-static;
+        };
+
+        libgcc-nolibc = callPackage ./gcc/libgcc.nix {
+          binutils-buildbuild = binutils;
+          gcc-buildbuild = gcc10;
+          gcc = gcc-latest-unwrapped;
+          gnumake = gnumake-musl;
+          gnutar = gnutar-latest;
+          enableShared = false;
+          libc = null;
           libc-headers = musl;
         };
 
@@ -337,13 +346,12 @@ lib.makeScope
           gcc = gcc-latest-unwrapped;
           gnumake = gnumake-musl;
           gnutar = gnutar-latest;
-          libc = musl;
-          dynamicLinkerGlob = "${musl}/lib/libc.so";
-          staticLibgcc = true;
+          libc = musl-static;
+          dynamicLinkerGlob = "${musl-static}/lib/libc.so";
         };
 
         linux-headers = callPackage ./linux-headers {
-          gcc = gcc-latest;
+          gcc = gcc10;
           gnumake = gnumake-musl;
           gnutar = gnutar-latest;
         };
@@ -378,8 +386,8 @@ lib.makeScope
         };
 
         musl-static = callPackage ./musl/static.nix {
-          libgcc = gcc-latest-unwrapped;
-          gcc = gcc-latest;
+          libgcc = libgcc-nolibc;
+          gcc = gcc-latest-unwrapped;
           gnumake = gnumake-musl;
         };
 
@@ -541,7 +549,7 @@ lib.makeScope
           gnumake = gnumake-musl;
           gnutar = gnutar-latest;
           libc = glibc;
-          libc-headers = glibc;
+          libc-headers = glibc-headers;
           targetPlatform = hostPlatform;
         };
 
@@ -553,7 +561,6 @@ lib.makeScope
           libc = glibc;
           targetPlatform = hostPlatform;
           dynamicLinkerGlob = "${glibc}/lib/ld-linux*.so.2";
-          staticLibgcc = true;
         };
 
         glibc = callPackage ./glibc {
@@ -561,6 +568,7 @@ lib.makeScope
           gnumake = gnumake-musl;
           gnutar = gnutar-latest;
           gnugrep = gnugrep-static;
+          libgcc = libgcc-nolibc;
         };
 
         glibc-headers = callPackage ./glibc/headers.nix {
