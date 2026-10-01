@@ -69,7 +69,8 @@ bash.runCommand "${pname}-${version}"
       --build=${buildPlatform.config} \
       --host=${hostPlatform.config} \
       --disable-dependency-tracking \
-      CXXFLAGS="-g0 -O2 -DNDEBUG -ffile-prefix-map=${gcc}=. -fmacro-prefix-map=${gcc}=."
+      CXXFLAGS="-g0 -O2 -DNDEBUG -ffile-prefix-map=${gcc}=. -fmacro-prefix-map=${gcc}=." \
+      LDFLAGS="-static"
 
     # Build
     make -j $NIX_BUILD_CORES
